@@ -53,6 +53,72 @@ static class Sig {
         }
     }
 
+    // Alternative (legacy?) format used in ShazamCore10.dll
+    // Works with any sample rate
+    public static byte[] Write2(int _, int sampleCount, IEnumerable<LandmarkInfo> landmarks) {
+        using(var mem = new MemoryStream())
+        using(var writer = new BinaryWriter(mem)) {
+            writer.Write(-1);
+            writer.Write(0x789ABC05);
+            writer.Write(0xFFFFFFFF);
+            writer.Write(0x30000002);
+            writer.Write(0x10);
+            writer.Write(-1);
+            writer.Write(-1);
+            writer.Write(0);
+            writer.Write(0);
+            writer.Write(0x40000000);
+            writer.Write(-1);
+            writer.Write(0);
+            writer.Write(0);
+            writer.Write(0);
+            writer.Write(0);
+            writer.Write(0x50000001);
+            writer.Write(0x18);
+            writer.Write(0);
+            writer.Write(0);
+            writer.Write(0);
+            writer.Write(0xDEADBEEF);
+            writer.Write(sampleCount);
+            writer.Write(0);
+            writer.Write(031100000);
+            writer.Write(0x0f);
+            writer.Write(0x42700000);
+
+            var bandData = GetBandData(landmarks);
+            for(var i = 0; i < bandData.Length; i++) {
+                writer.Write(0);
+                writer.Write(0x60030040 + i);
+                writer.Write(bandData[i].Length);
+                writer.Write(0);
+                writer.Write(0);
+                writer.Write(0);
+                writer.Write(bandData[i]);
+            }
+
+            var totalLen = (int)mem.Length;
+            var contentLen = totalLen - 32;
+
+            foreach(var i in new[] { 0, 5, 10 }) {
+                mem.Position = i * 4;
+                writer.Write(contentLen);
+            }
+
+            mem.Position = 6 * 4;
+            writer.Write(contentLen ^ 0x789ABC13);
+
+            var buffer = mem.GetBuffer();
+            var checksum = (uint)0;
+            for(var i = 0; i < totalLen / 4; i++)
+                checksum += BitConverter.ToUInt32(buffer, 4 * i);
+
+            mem.Position = 7 * 4;
+            writer.Write(checksum);
+
+            return mem.ToArray();
+        }
+    }
+
     static byte[][] GetBandData(IEnumerable<LandmarkInfo> landmarks) {
         return new[] {
             GetBandData(landmarks, FREQ_0, FREQ_1),
