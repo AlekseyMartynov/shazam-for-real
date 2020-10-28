@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 // Based on https://github.com/marin-m/SongRec/blob/0.1.0/python-version/fingerprinting/signature_format.py
 
@@ -16,23 +15,9 @@ static class Sig {
     public static byte[] Write(int sampleRate, int sampleCount, IEnumerable<LandmarkInfo> landmarks) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
-
-            var bandData = new[] {
-                SerializeLandmarks(landmarks, FREQ_0, FREQ_1),
-                SerializeLandmarks(landmarks, FREQ_1, FREQ_2),
-                SerializeLandmarks(landmarks, FREQ_2, FREQ_3),
-                SerializeLandmarks(landmarks, FREQ_3, FREQ_4)
-            };
-
-            var bandPads = bandData.Select(i => CalcPadLen(i.Length)).ToArray();
-
-            var contentLen = 8 + 8 * bandData.Length
-                + bandData.Sum(i => i.Length)
-                + bandPads.Sum();
-
             writer.Write(0xCAFE2580);
             writer.Write(-1);
-            writer.Write(contentLen);
+            writer.Write(-1);
             writer.Write(0);
             writer.Write(0);
             writer.Write(0);
@@ -42,20 +27,25 @@ static class Sig {
             writer.Write(0);
             writer.Write(sampleCount);
             writer.Write(0x007C0000);
-
             writer.Write(0x40000000);
-            writer.Write(contentLen);
+            writer.Write(-1);
 
-            var padding = new byte[] { 0, 0, 0 };
-
-            for(var i = 0; i < 4; i++) {
+            var bandData = GetBandData(landmarks);
+            for(var i = 0; i < bandData.Length; i++) {
                 writer.Write(0x60030040 + i);
                 writer.Write(bandData[i].Length);
                 writer.Write(bandData[i]);
-                writer.Write(padding, 0, bandPads[i]);
             }
 
-            var crc = Force.Crc32.Crc32Algorithm.Compute(mem.GetBuffer(), 8, (int)mem.Length - 8);
+            var totalLen = (int)mem.Length;
+            var contentLen = totalLen - 48;
+
+            foreach(var i in new[] { 2, 13 }) {
+                mem.Position = i * 4;
+                writer.Write(contentLen);
+            }
+
+            var crc = Force.Crc32.Crc32Algorithm.Compute(mem.GetBuffer(), 8, totalLen - 8);
             mem.Position = 4;
             writer.Write(crc);
 
@@ -63,7 +53,16 @@ static class Sig {
         }
     }
 
-    static byte[] SerializeLandmarks(IEnumerable<LandmarkInfo> landmarks, double minFreq, double maxFreq) {
+    static byte[][] GetBandData(IEnumerable<LandmarkInfo> landmarks) {
+        return new[] {
+            GetBandData(landmarks, FREQ_0, FREQ_1),
+            GetBandData(landmarks, FREQ_1, FREQ_2),
+            GetBandData(landmarks, FREQ_2, FREQ_3),
+            GetBandData(landmarks, FREQ_3, FREQ_4)
+        };
+    }
+
+    static byte[] GetBandData(IEnumerable<LandmarkInfo> landmarks, double minFreq, double maxFreq) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             var stripeIndex = 0;
@@ -87,6 +86,9 @@ static class Sig {
 
                 stripeIndex = p.StripeIndex;
             }
+
+            while(mem.Length % 4 != 0)
+                writer.Write((byte)0);
 
             return mem.ToArray();
         }
