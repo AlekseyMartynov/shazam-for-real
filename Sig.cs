@@ -13,7 +13,7 @@ static class Sig {
         FREQ_3 = 3500,
         FREQ_4 = 5500;
 
-    public static byte[] Write(int sampleCount, IEnumerable<LandmarkInfo> landmarks) {
+    public static byte[] Write(int sampleRate, int sampleCount, IEnumerable<LandmarkInfo> landmarks) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
 
@@ -37,7 +37,7 @@ static class Sig {
             writer.Write(0);
             writer.Write(0);
             writer.Write(0);
-            writer.Write(3 << 27);
+            writer.Write(GetSampleRateCode(sampleRate) << 27);
             writer.Write(0);
             writer.Write(0);
             writer.Write(sampleCount);
@@ -97,6 +97,15 @@ static class Sig {
         if(result < 0)
             result += 4;
         return result;
+    }
+
+    static int GetSampleRateCode(int sampleRate) {
+        switch(sampleRate) {
+            case 8000: return 1;
+            case 16000: return 3;
+            case 32000: return 4;
+        }
+        throw new NotSupportedException();
     }
 
 }

@@ -10,7 +10,7 @@ using NAudio.Wave;
 
 class Program {
     const int SAMPLE_RATE = 16000;
-    const int CHUNK_SIZE = 128;
+    const int CHUNK_SIZE = SAMPLE_RATE / 125;
     const int CHUNK_COUNT = 16;
     const int FFT_SIZE = CHUNK_SIZE * CHUNK_COUNT;
     const int RADIUS = 48;
@@ -82,7 +82,7 @@ class Program {
                     if(wave.ProcessedMs >= retryMs) {
                         //new Painter(spectro, landmarks).Paint("c:/temp/spectro.png");
 
-                        var sigBytes = Sig.Write(wave.ProcessedSamples, CreateLandmarkInfos(spectro, landmarks));
+                        var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, CreateLandmarkInfos(spectro, landmarks));
                         var result = ShazamApi.SendRequest(tagId, wave.ProcessedMs, sigBytes).GetAwaiter().GetResult();
                         if(result.Success)
                             return result;
