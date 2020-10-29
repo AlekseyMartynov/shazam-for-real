@@ -80,9 +80,12 @@ class Program {
                         landmarks.Detect(spectro.StripeCount - RADIUS - 1);
 
                     if(wave.ProcessedMs >= retryMs) {
-                        //new Painter(spectro, landmarks).Paint("c:/temp/spectro.png");
+                        var landmarkInfos = CreateLandmarkInfos(spectro, landmarks);
 
-                        var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, CreateLandmarkInfos(spectro, landmarks));
+                        //new Painter(spectro, landmarks).Paint("c:/temp/spectro.png");
+                        //new Synthback(SAMPLE_RATE, CHUNK_SIZE).Synth(landmarkInfos, "c:/temp/synthback.raw");
+
+                        var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, landmarkInfos);
                         var result = ShazamApi.SendRequest(tagId, wave.ProcessedMs, sigBytes).GetAwaiter().GetResult();
                         if(result.Success)
                             return result;
