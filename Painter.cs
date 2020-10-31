@@ -4,11 +4,11 @@ using System.Drawing.Drawing2D;
 
 class Painter {
     readonly Spectrogram Spectro;
-    readonly Landmarks Landmarks;
+    readonly LandmarkFinder Finder;
 
-    public Painter(Spectrogram spectro, Landmarks landmarks) {
+    public Painter(Spectrogram spectro, LandmarkFinder finder) {
         Spectro = spectro;
-        Landmarks = landmarks;
+        Finder = finder;
     }
 
     public void Paint(string filename) {
@@ -28,7 +28,7 @@ class Painter {
 
             using(var g = Graphics.FromImage(bitmap)) {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                foreach(var (x, y) in Landmarks.Locations) {
+                foreach(var (x, y) in Finder.Locations) {
                     var magnitude = Spectro.GetMagnitude(x, y);
                     var radius = 3 + Convert.ToInt32(4 * magnitude / Spectro.MaxMagnitude);
                     var cx = x;

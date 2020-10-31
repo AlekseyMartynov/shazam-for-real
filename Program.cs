@@ -44,7 +44,7 @@ class Program {
     static ShazamResult CaptureAndTag() {
         var wave = new WaveWindow(SAMPLE_RATE, CHUNK_SIZE, CHUNK_COUNT);
         var spectro = new Spectrogram(FFT_SIZE);
-        var landmarks = new Landmarks(spectro, RADIUS, FreqToBin(Sig.FREQ_0), FreqToBin(Sig.FREQ_4));
+        var finder = new LandmarkFinder(spectro, RADIUS, FreqToBin(Sig.FREQ_0), FreqToBin(Sig.FREQ_4));
 
         using(var capture = new WasapiCapture()) {
             var captureBuf = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false };
@@ -77,12 +77,12 @@ class Program {
                         spectro.AddStripe(wave.GetSamples());
 
                     if(spectro.StripeCount > 2 * RADIUS)
-                        landmarks.Detect(spectro.StripeCount - RADIUS - 1);
+                        finder.Find(spectro.StripeCount - RADIUS - 1);
 
                     if(wave.ProcessedMs >= retryMs) {
-                        var landmarkInfos = CreateLandmarkInfos(spectro, landmarks);
+                        var landmarkInfos = CreateLandmarkInfos(spectro, finder);
 
-                        //new Painter(spectro, landmarks).Paint("c:/temp/spectro.png");
+                        //new Painter(spectro, finder).Paint("c:/temp/spectro.png");
                         //new Synthback(SAMPLE_RATE, CHUNK_SIZE).Synth(landmarkInfos, "c:/temp/synthback.raw");
 
                         var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, landmarkInfos);
@@ -99,8 +99,8 @@ class Program {
         }
     }
 
-    static IReadOnlyCollection<LandmarkInfo> CreateLandmarkInfos(Spectrogram spectro, Landmarks landmarks) {
-        var locations = landmarks.Locations;
+    static IReadOnlyCollection<LandmarkInfo> CreateLandmarkInfos(Spectrogram spectro, LandmarkFinder finder) {
+        var locations = finder.Locations;
         var result = new List<LandmarkInfo>(locations.Count);
 
         foreach(var (stripe, bin) in locations) {

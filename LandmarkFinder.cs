@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-class Landmarks {
+class LandmarkFinder {
     readonly Spectrogram Spectro;
     readonly int Radius;
 
@@ -11,7 +11,7 @@ class Landmarks {
 
     readonly List<(int, int)> LocationsInternal = new List<(int, int)>();
 
-    public Landmarks(Spectrogram spectro, int radius, int minBin, int maxBin) {
+    public LandmarkFinder(Spectrogram spectro, int radius, int minBin, int maxBin) {
         Spectro = spectro;
         Radius = radius;
         MinBin = Math.Max(minBin, radius);
@@ -21,7 +21,7 @@ class Landmarks {
 
     public IReadOnlyList<(int stripe, int bin)> Locations => LocationsInternal;
 
-    public void Detect(int stripe) {
+    public void Find(int stripe) {
         for(var bin = MinBin; bin < MaxBin; bin++) {
             var magnitude = Spectro.GetMagnitude(stripe, bin);
             var maxNeighbor = 0d;
