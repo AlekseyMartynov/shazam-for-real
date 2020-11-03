@@ -26,20 +26,17 @@ static class ShazamApi {
 
         var result = new ShazamResult();
 
-        try {
-            var res = await HTTP.PostAsync(url, postData);
-            var obj = JsonConvert.DeserializeObject<JToken>(await res.Content.ReadAsStringAsync());
-            var track = obj.Value<JToken>("track");
+        var res = await HTTP.PostAsync(url, postData);
+        var obj = JsonConvert.DeserializeObject<JToken>(await res.Content.ReadAsStringAsync());
+        var track = obj.Value<JToken>("track");
 
-            if(track != null) {
-                result.Success = true;
-                result.Url = track.Value<string>("url");
-                result.Title = track.Value<string>("title");
-                result.Artist = track.Value<string>("subtitle");
-            } else {
-                result.RetryMs = obj.Value<int>("retryms");
-            }
-        } catch {
+        if(track != null) {
+            result.Success = true;
+            result.Url = track.Value<string>("url");
+            result.Title = track.Value<string>("title");
+            result.Artist = track.Value<string>("subtitle");
+        } else {
+            result.RetryMs = obj.Value<int>("retryms");
         }
 
         return result;
