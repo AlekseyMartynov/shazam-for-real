@@ -27,14 +27,18 @@ class Program {
             if(key.Key == ConsoleKey.Spacebar) {
                 Console.Write("Listening... ");
 
-                var result = CaptureAndTag();
+                try {
+                    var result = CaptureAndTag();
 
-                if(result.Success) {
-                    Console.CursorLeft = 0;
-                    Console.WriteLine(result.Url);
-                    Process.Start("explorer", result.Url);
-                } else {
-                    Console.WriteLine(":(");
+                    if(result.Success) {
+                        Console.CursorLeft = 0;
+                        Console.WriteLine(result.Url);
+                        Process.Start("explorer", result.Url);
+                    } else {
+                        Console.WriteLine(":(");
+                    }
+                } catch(Exception x) {
+                    Console.WriteLine("error: " + x.Message);
                 }
             }
         }
