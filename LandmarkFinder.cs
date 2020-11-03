@@ -3,22 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 
 class LandmarkFinder {
+    public const int
+        RADIUS_TIME = 47,
+        RADIUS_FREQ = 9;
+
+    // Locations per second in a band
+    const int RATE = 12;
+
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
     readonly Spectrogram Spectro;
-    readonly int Radius;
-
+    readonly TimeSpan StripeDuration;
     readonly int MinBin, MaxBin;
-    readonly IEnumerable<int> Deltas;
+    readonly IReadOnlyList<List<(int stripe, int bin)>> Bands;
 
-    readonly IReadOnlyList<List<(int, int)>> Bands;
-
-    public LandmarkFinder(Spectrogram spectro, int radius) {
+    public LandmarkFinder(Spectrogram spectro, TimeSpan stripeDuration) {
         Spectro = spectro;
-        Radius = radius;
-        MinBin = Math.Max(spectro.FreqToBin(BAND_FREQS.Min()), radius);
-        MaxBin = Math.Min(spectro.FreqToBin(BAND_FREQS.Max()), spectro.BinCount - radius);
-        Deltas = Enumerable.Range(-Radius, Radius).Concat(Enumerable.Range(1, Radius));
+        StripeDuration = stripeDuration;
+
+        MinBin = Math.Max(spectro.FreqToBin(BAND_FREQS.Min()), RADIUS_FREQ);
+        MaxBin = Math.Min(spectro.FreqToBin(BAND_FREQS.Max()), spectro.BinCount - RADIUS_FREQ);
 
         Bands = Enumerable.Range(0, BAND_FREQS.Count - 1)
             .Select(_ => new List<(int, int)>())
@@ -27,22 +31,14 @@ class LandmarkFinder {
 
     public void Find(int stripe) {
         for(var bin = MinBin; bin < MaxBin; bin++) {
-            var magnitude = Spectro.GetMagnitude(stripe, bin);
-            var maxNeighbor = 0d;
 
-            foreach(var delta in Deltas)
-                maxNeighbor = Math.Max(maxNeighbor, Spectro.GetMagnitude(stripe, bin + delta));
-
-            if(magnitude <= maxNeighbor)
+            if(!IsPeak(stripe, bin, RADIUS_TIME, 0))
                 continue;
 
-            foreach(var delta in Deltas)
-                maxNeighbor = Math.Max(maxNeighbor, Spectro.GetMagnitude(stripe + delta, bin));
-
-            if(magnitude <= maxNeighbor)
+            if(!IsPeak(stripe, bin, 3, RADIUS_FREQ))
                 continue;
 
-            Bands[GetBandIndex(bin)].Add((stripe, bin));
+            AddLocation(stripe, bin);
         }
     }
 
@@ -80,6 +76,38 @@ class LandmarkFinder {
             Convert.ToUInt16(UInt16.MaxValue * Spectro.GetMagnitude(stripe, bin) / Spectro.MaxMagnitude),
             Spectro.BinToFreq(bin)
         );
+    }
+
+    bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {
+        var center = Spectro.GetMagnitude(stripe, bin);
+        for(var s = -stripeRadius; s <= stripeRadius; s++) {
+            for(var b = -binRadius; b <= binRadius; b++) {
+                if(s == 0 && b == 0)
+                    continue;
+                if(Spectro.GetMagnitude(stripe + s, bin + b) >= center)
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    void AddLocation(int stripe, int bin) {
+        var bandLocations = Bands[GetBandIndex(bin)];
+
+        if(bandLocations.Any()) {
+            var capturedDuration = StripeDuration.TotalSeconds * (stripe - bandLocations.First().stripe);
+            var allowedCount = 1 + capturedDuration * RATE;
+            if(bandLocations.Count > allowedCount) {
+                var magnitude = Spectro.GetMagnitude(stripe, bin);
+                var pruneIndex = bandLocations.FindLastIndex(l => Spectro.GetMagnitude(l.stripe, l.bin) < magnitude);
+                if(pruneIndex < 0)
+                    return;
+
+                bandLocations.RemoveAt(pruneIndex);
+            }
+        }
+
+        bandLocations.Add((stripe, bin));
     }
 
 }

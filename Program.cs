@@ -13,7 +13,6 @@ class Program {
     const int CHUNK_SIZE = SAMPLE_RATE / 125;
     const int CHUNK_COUNT = 16;
     const int FFT_SIZE = CHUNK_SIZE * CHUNK_COUNT;
-    const int RADIUS = 48;
 
     static void Main(string[] args) {
         Console.WriteLine("SPACE - tag, Q - quit");
@@ -44,7 +43,7 @@ class Program {
     static ShazamResult CaptureAndTag() {
         var wave = new WaveWindow(SAMPLE_RATE, CHUNK_SIZE, CHUNK_COUNT);
         var spectro = new Spectrogram(SAMPLE_RATE, FFT_SIZE);
-        var finder = new LandmarkFinder(spectro, RADIUS);
+        var finder = new LandmarkFinder(spectro, TimeSpan.FromSeconds(1d * CHUNK_SIZE / SAMPLE_RATE));
 
         using(var capture = new WasapiCapture()) {
             var captureBuf = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false };
@@ -76,8 +75,8 @@ class Program {
                     if(wave.IsFull)
                         spectro.AddStripe(wave.GetSamples());
 
-                    if(spectro.StripeCount > 2 * RADIUS)
-                        finder.Find(spectro.StripeCount - RADIUS - 1);
+                    if(spectro.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
+                        finder.Find(spectro.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
 
                     if(wave.ProcessedMs >= retryMs) {
                         //new Painter(spectro, finder).Paint("c:/temp/spectro.png");
