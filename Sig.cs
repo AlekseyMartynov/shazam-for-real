@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 // Based on https://github.com/marin-m/SongRec/blob/0.1.0/python-version/fingerprinting/signature_format.py
 
 static class Sig {
-    public const int
-        FREQ_0 = 250,
-        FREQ_1 = 520,
-        FREQ_2 = 1450,
-        FREQ_3 = 3500,
-        FREQ_4 = 5500;
 
-    public static byte[] Write(int sampleRate, int sampleCount, IEnumerable<LandmarkInfo> landmarks) {
+    public static byte[] Write(int sampleRate, int sampleCount, LandmarkFinder finder) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             writer.Write(0xCAFE2580);
@@ -30,7 +25,7 @@ static class Sig {
             writer.Write(0x40000000);
             writer.Write(-1);
 
-            var bandData = GetBandData(landmarks);
+            var bandData = GetBandData(finder);
             for(var i = 0; i < bandData.Length; i++) {
                 writer.Write(0x60030040 + i);
                 writer.Write(bandData[i].Length);
@@ -55,7 +50,7 @@ static class Sig {
 
     // Alternative (legacy?) format used in ShazamCore10.dll
     // Works with any sample rate
-    public static byte[] Write2(int _, int sampleCount, IEnumerable<LandmarkInfo> landmarks) {
+    public static byte[] Write2(int _, int sampleCount, LandmarkFinder finder) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             writer.Write(-1);
@@ -85,7 +80,7 @@ static class Sig {
             writer.Write(0x0f);
             writer.Write(0x42700000);
 
-            var bandData = GetBandData(landmarks);
+            var bandData = GetBandData(finder);
             for(var i = 0; i < bandData.Length; i++) {
                 writer.Write(0);
                 writer.Write(0x60030040 + i);
@@ -119,23 +114,16 @@ static class Sig {
         }
     }
 
-    static byte[][] GetBandData(IEnumerable<LandmarkInfo> landmarks) {
-        return new[] {
-            GetBandData(landmarks, FREQ_0, FREQ_1),
-            GetBandData(landmarks, FREQ_1, FREQ_2),
-            GetBandData(landmarks, FREQ_2, FREQ_3),
-            GetBandData(landmarks, FREQ_3, FREQ_4)
-        };
+    static byte[][] GetBandData(LandmarkFinder finder) {
+        return finder.EnumerateBands().Select(GetBandData).ToArray();
     }
 
-    static byte[] GetBandData(IEnumerable<LandmarkInfo> landmarks, double minFreq, double maxFreq) {
+    static byte[] GetBandData(IEnumerable<LandmarkInfo> landmarks) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             var stripeIndex = 0;
 
             foreach(var p in landmarks) {
-                if(p.Freq < minFreq || p.Freq >= maxFreq)
-                    continue;
 
                 if(p.StripeIndex - stripeIndex >= 100) {
                     stripeIndex = p.StripeIndex;

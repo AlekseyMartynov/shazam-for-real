@@ -43,8 +43,8 @@ class Program {
 
     static ShazamResult CaptureAndTag() {
         var wave = new WaveWindow(SAMPLE_RATE, CHUNK_SIZE, CHUNK_COUNT);
-        var spectro = new Spectrogram(FFT_SIZE);
-        var finder = new LandmarkFinder(spectro, RADIUS, FreqToBin(Sig.FREQ_0), FreqToBin(Sig.FREQ_4));
+        var spectro = new Spectrogram(SAMPLE_RATE, FFT_SIZE);
+        var finder = new LandmarkFinder(spectro, RADIUS);
 
         using(var capture = new WasapiCapture()) {
             var captureBuf = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false };
@@ -80,12 +80,10 @@ class Program {
                         finder.Find(spectro.StripeCount - RADIUS - 1);
 
                     if(wave.ProcessedMs >= retryMs) {
-                        var landmarkInfos = CreateLandmarkInfos(spectro, finder);
-
                         //new Painter(spectro, finder).Paint("c:/temp/spectro.png");
-                        //new Synthback(SAMPLE_RATE, CHUNK_SIZE).Synth(landmarkInfos, "c:/temp/synthback.raw");
+                        //new Synthback(SAMPLE_RATE, CHUNK_SIZE).Synth(finder.EnumerateAllLandmarks(), "c:/temp/synthback.raw");
 
-                        var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, landmarkInfos);
+                        var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, finder);
                         var result = ShazamApi.SendRequest(tagId, wave.ProcessedMs, sigBytes).GetAwaiter().GetResult();
                         if(result.Success)
                             return result;
@@ -97,29 +95,5 @@ class Program {
                 }
             }
         }
-    }
-
-    static IReadOnlyCollection<LandmarkInfo> CreateLandmarkInfos(Spectrogram spectro, LandmarkFinder finder) {
-        var locations = finder.Locations;
-        var result = new List<LandmarkInfo>(locations.Count);
-
-        foreach(var (stripe, bin) in locations) {
-            result.Add(new LandmarkInfo(
-                stripe,
-                Convert.ToUInt16(64 * bin - 1),
-                Convert.ToUInt16(UInt16.MaxValue * spectro.GetMagnitude(stripe, bin) / spectro.MaxMagnitude),
-                BinToFreq(bin)
-            ));
-        }
-
-        return result;
-    }
-
-    static int FreqToBin(double freq) {
-        return Convert.ToInt32(freq * FFT_SIZE / SAMPLE_RATE);
-    }
-
-    static double BinToFreq(int bin) {
-        return 1d * bin * SAMPLE_RATE / FFT_SIZE;
     }
 }

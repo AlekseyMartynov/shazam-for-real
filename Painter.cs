@@ -28,7 +28,7 @@ class Painter {
 
             using(var g = Graphics.FromImage(bitmap)) {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                foreach(var (x, y) in Finder.Locations) {
+                foreach(var (x, y) in Finder.EnumerateAllLocations()) {
                     var magnitude = Spectro.GetMagnitude(x, y);
                     var radius = 3 + Convert.ToInt32(4 * magnitude / Spectro.MaxMagnitude);
                     var cx = x;

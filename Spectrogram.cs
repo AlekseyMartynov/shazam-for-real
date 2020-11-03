@@ -5,13 +5,15 @@ using System.Collections.Generic;
 using System.Numerics;
 
 class Spectrogram {
+    readonly int SampleRate;
     readonly int FFTSize;
     readonly double[] Hann;
     readonly List<double[]> Stripes = new List<double[]>();
 
     public readonly int BinCount;
 
-    public Spectrogram(int fftSize) {
+    public Spectrogram(int sampleRate, int fftSize) {
+        SampleRate = sampleRate;
         FFTSize = fftSize;
         Hann = Window.Hann(fftSize);
         BinCount = fftSize / 2 + 1;
@@ -44,6 +46,14 @@ class Spectrogram {
 
     public double GetMagnitude(int stripe, int bin) {
         return Stripes[stripe][bin];
+    }
+
+    public int FreqToBin(double freq) {
+        return Convert.ToInt32(freq * FFTSize / SampleRate);
+    }
+
+    public double BinToFreq(int bin) {
+        return 1d * bin * SampleRate / FFTSize;
     }
 
 }
