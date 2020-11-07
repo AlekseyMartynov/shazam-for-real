@@ -13,7 +13,7 @@ static class Sig {
             writer.Write(0xCAFE2580);
             writer.Write(-1);
             writer.Write(-1);
-            writer.Write(0);
+            writer.Write(0x94119C00);
             writer.Write(0);
             writer.Write(0);
             writer.Write(0);
@@ -50,7 +50,7 @@ static class Sig {
 
     // Alternative (legacy?) format used in ShazamCore10.dll
     // Works with any sample rate
-    public static byte[] Write2(int _, int sampleCount, LandmarkFinder finder) {
+    public static byte[] Write2(int sampleRate, int sampleCount, LandmarkFinder finder) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             writer.Write(-1);
@@ -74,7 +74,7 @@ static class Sig {
             writer.Write(0);
             writer.Write(0);
             writer.Write(0xDEADBEEF);
-            writer.Write(sampleCount);
+            writer.Write(Convert.ToInt32(sampleCount * 8000L / sampleRate));
             writer.Write(0);
             writer.Write(031100000);
             writer.Write(0x0f);
