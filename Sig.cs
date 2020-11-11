@@ -115,7 +115,7 @@ static class Sig {
     }
 
     static byte[][] GetBandData(LandmarkFinder finder) {
-        return finder.EnumerateBands().Select(GetBandData).ToArray();
+        return finder.EnumerateBandedLandmarks().Select(GetBandData).ToArray();
     }
 
     static byte[] GetBandData(IEnumerable<LandmarkInfo> landmarks) {

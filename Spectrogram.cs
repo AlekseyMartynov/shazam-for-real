@@ -2,6 +2,7 @@
 using MathNet.Numerics.IntegralTransforms;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 class Spectrogram {
@@ -20,7 +21,6 @@ class Spectrogram {
     }
 
     public int StripeCount => Stripes.Count;
-    public double MaxMagnitude { get; private set; }
 
     public void AddStripe(IReadOnlyList<short> samples) {
         if(samples.Count != FFTSize)
@@ -34,12 +34,8 @@ class Spectrogram {
 
         var stripe = new double[BinCount];
 
-        for(var bin = 0; bin < BinCount; bin++) {
-            var magnitude = fft[bin].Magnitude;
-            MaxMagnitude = Math.Max(MaxMagnitude, magnitude);
-
-            stripe[bin] = magnitude;
-        }
+        for(var bin = 0; bin < BinCount; bin++)
+            stripe[bin] = fft[bin].Magnitude;
 
         Stripes.Add(stripe);
     }
@@ -54,6 +50,10 @@ class Spectrogram {
 
     public double BinToFreq(int bin) {
         return 1d * bin * SampleRate / FFTSize;
+    }
+
+    public double FindMaxMagnitude() {
+        return Stripes.Max(s => s.Max());
     }
 
 }

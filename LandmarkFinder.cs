@@ -49,16 +49,12 @@ class LandmarkFinder {
         }
     }
 
-    public IEnumerable<IEnumerable<LandmarkInfo>> EnumerateBands() {
+    public IEnumerable<IEnumerable<LandmarkInfo>> EnumerateBandedLandmarks() {
         return Bands.Select(locations => locations.Select(LocationToLandmark));
     }
 
     public IEnumerable<(int stripe, int bin)> EnumerateAllLocations() {
         return Bands.SelectMany(i => i);
-    }
-
-    public IEnumerable<LandmarkInfo> EnumerateAllLandmarks() {
-        return EnumerateAllLocations().Select(LocationToLandmark);
     }
 
     int GetBandIndex(int bin) {
@@ -80,8 +76,7 @@ class LandmarkFinder {
         return new LandmarkInfo(
             stripe,
             Convert.ToUInt16(64 * bin + 32 * EstimateBinSkew(stripe, bin)),
-            Convert.ToUInt16(3 * 4096 * (Math.Log(Spectro.GetMagnitude(stripe, bin)) / LOG_MIN_MAGN - 1)),
-            Spectro.BinToFreq(bin)
+            Convert.ToUInt16(3 * 4096 * (Math.Log(Spectro.GetMagnitude(stripe, bin)) / LOG_MIN_MAGN - 1))
         );
     }
 

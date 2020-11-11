@@ -5,26 +5,32 @@ using System.IO;
 using System.Linq;
 
 class Synthback {
+    readonly Spectrogram Spectro;
+    readonly LandmarkFinder LandmarkFinder;
     readonly int SampleRate, ChunkSize;
     readonly double[] Envelope;
 
-    public Synthback(int sampleRate, int chunkSize) {
+    public Synthback(Spectrogram spectro, LandmarkFinder finder, int sampleRate, int chunkSize) {
+        Spectro = spectro;
+        LandmarkFinder = finder;
         SampleRate = sampleRate;
         ChunkSize = chunkSize;
         Envelope = Window.Hann(2 * ChunkSize);
     }
 
-    public void Synth(IEnumerable<LandmarkInfo> landmarks, string filename) {
-        var stripeCount = 1 + landmarks.Max(l => l.StripeIndex);
+    public void Synth(string filename) {
+        var locations = LandmarkFinder.EnumerateAllLocations().ToArray();
+
+        var stripeCount = 1 + locations.Max(l => l.stripe);
         var wave = new double[stripeCount * ChunkSize];
 
-        foreach(var l in landmarks) {
-            var startSample = ChunkSize * (l.StripeIndex - 1);
+        foreach(var (stripe, bin) in locations) {
+            var startSample = ChunkSize * (stripe - 1);
             var endSample = startSample + 2 * ChunkSize;
 
             for(var t = startSample; t < endSample; t++)
-                wave[t] += Math.Sin(2 * Math.PI * l.Freq * t / SampleRate)
-                    * l.NormalizedMagnitude
+                wave[t] += Math.Sin(2 * Math.PI * Spectro.BinToFreq(bin) * t / SampleRate)
+                    * Spectro.GetMagnitude(stripe, bin)
                     * Envelope[t - startSample];
         }
 

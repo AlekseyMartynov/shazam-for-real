@@ -84,7 +84,7 @@ class Program {
 
                     if(wave.ProcessedMs >= retryMs) {
                         //new Painter(spectro, finder).Paint("c:/temp/spectro.png");
-                        //new Synthback(SAMPLE_RATE, CHUNK_SIZE).Synth(finder.EnumerateAllLandmarks(), "c:/temp/synthback.raw");
+                        //new Synthback(spectro, finder, SAMPLE_RATE, CHUNK_SIZE).Synth("c:/temp/synthback.raw");
 
                         var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, finder);
                         var result = ShazamApi.SendRequest(tagId, wave.ProcessedMs, sigBytes).GetAwaiter().GetResult();
