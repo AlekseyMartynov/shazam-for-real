@@ -12,6 +12,10 @@ class LandmarkFinder {
 
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
+    static readonly double
+        MIN_MAGN = 64,
+        LOG_MIN_MAGN = Math.Log(MIN_MAGN);
+
     readonly Spectrogram Spectro;
     readonly TimeSpan StripeDuration;
     readonly int MinBin, MaxBin;
@@ -31,6 +35,9 @@ class LandmarkFinder {
 
     public void Find(int stripe) {
         for(var bin = MinBin; bin < MaxBin; bin++) {
+
+            if(Spectro.GetMagnitude(stripe, bin) < MIN_MAGN)
+                continue;
 
             if(!IsPeak(stripe, bin, RADIUS_TIME, 0))
                 continue;
@@ -72,10 +79,17 @@ class LandmarkFinder {
         var (stripe, bin) = loc;
         return new LandmarkInfo(
             stripe,
-            Convert.ToUInt16(64 * bin - 1),
-            Convert.ToUInt16(UInt16.MaxValue * Spectro.GetMagnitude(stripe, bin) / Spectro.MaxMagnitude),
+            Convert.ToUInt16(64 * bin + 32 * EstimateBinSkew(stripe, bin)),
+            Convert.ToUInt16(3 * 4096 * (Math.Log(Spectro.GetMagnitude(stripe, bin)) / LOG_MIN_MAGN - 1)),
             Spectro.BinToFreq(bin)
         );
+    }
+
+    double EstimateBinSkew(int stripe, int bin) {
+        var prev = Spectro.GetMagnitude(stripe, bin - 1);
+        var center = Spectro.GetMagnitude(stripe, bin);
+        var next = Spectro.GetMagnitude(stripe, bin + 1);
+        return (next - prev) / (2 * center - next - prev);
     }
 
     bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {

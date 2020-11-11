@@ -30,7 +30,7 @@ class Spectrogram {
         for(var i = 0; i < FFTSize; i++)
             fft[i] = new Complex(samples[i] * Hann[i], 0);
 
-        Fourier.Forward(fft);
+        Fourier.Forward(fft, FourierOptions.NoScaling);
 
         var stripe = new double[BinCount];
 
