@@ -73,18 +73,30 @@ class LandmarkFinder {
 
     LandmarkInfo LocationToLandmark((int, int) loc) {
         var (stripe, bin) = loc;
+
+        // Quadratic Interpolation of Spectral Peaks
+        // https://stackoverflow.com/a/59140547
+        // https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html
+
+        // https://ccrma.stanford.edu/~jos/parshl/Peak_Detection_Steps_3.html
+        // "We have found empirically that the frequencies tend to be about twice as accurate"
+        // "when dB magnitude is used rather than just linear magnitude"
+
+        var alpha = GetLogMagnitude(stripe, bin - 1);
+        var beta = GetLogMagnitude(stripe, bin);
+        var gamma = GetLogMagnitude(stripe, bin + 1);
+        var p = (alpha - gamma) / (alpha - 2 * beta + gamma) / 2;
+
         return new LandmarkInfo(
             stripe,
-            Convert.ToUInt16(64 * bin + 32 * EstimateBinSkew(stripe, bin)),
-            Convert.ToUInt16(3 * 4096 * (Math.Log(Spectro.GetMagnitude(stripe, bin)) / LOG_MIN_MAGN - 1))
+            Convert.ToUInt16(64 * (bin + p)),
+            Convert.ToUInt16(beta - (alpha - gamma) * p / 4)
         );
     }
 
-    double EstimateBinSkew(int stripe, int bin) {
-        var prev = Spectro.GetMagnitude(stripe, bin - 1);
-        var center = Spectro.GetMagnitude(stripe, bin);
-        var next = Spectro.GetMagnitude(stripe, bin + 1);
-        return (next - prev) / (2 * center - next - prev);
+    double GetLogMagnitude(int stripe, int bin) {
+        // Pack 64..2^38 into uint16
+        return 3 * 4096 * (Math.Log(Spectro.GetMagnitude(stripe, bin)) / LOG_MIN_MAGN - 1);
     }
 
     bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {
