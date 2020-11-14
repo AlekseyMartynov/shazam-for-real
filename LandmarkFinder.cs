@@ -12,9 +12,9 @@ class LandmarkFinder {
 
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
-    static readonly double
+    static readonly float
         MIN_MAGN_SQUARED = 64 * 64,
-        LOG_MIN_MAGN_SQUARED = Math.Log(MIN_MAGN_SQUARED);
+        LOG_MIN_MAGN_SQUARED = MathF.Log(MIN_MAGN_SQUARED);
 
     readonly Spectrogram Spectro;
     readonly TimeSpan StripeDuration;
@@ -94,9 +94,9 @@ class LandmarkFinder {
         );
     }
 
-    double GetLogMagnitude(int stripe, int bin) {
+    float GetLogMagnitude(int stripe, int bin) {
         // Pack 64..2^38 into uint16
-        return 3 * 4096 * (Math.Log(Spectro.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED - 1);
+        return 3 * 4096 * (MathF.Log(Spectro.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED - 1);
     }
 
     bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {

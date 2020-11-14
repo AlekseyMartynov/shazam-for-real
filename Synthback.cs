@@ -8,29 +8,29 @@ class Synthback {
     readonly Spectrogram Spectro;
     readonly LandmarkFinder LandmarkFinder;
     readonly int SampleRate, ChunkSize;
-    readonly double[] Envelope;
+    readonly float[] Envelope;
 
     public Synthback(Spectrogram spectro, LandmarkFinder finder, int sampleRate, int chunkSize) {
         Spectro = spectro;
         LandmarkFinder = finder;
         SampleRate = sampleRate;
         ChunkSize = chunkSize;
-        Envelope = Window.Hann(2 * ChunkSize);
+        Envelope = Array.ConvertAll(Window.Hann(2 * ChunkSize), Convert.ToSingle);
     }
 
     public void Synth(string filename) {
         var locations = LandmarkFinder.EnumerateAllLocations().ToArray();
 
         var stripeCount = 1 + locations.Max(l => l.stripe);
-        var wave = new double[stripeCount * ChunkSize];
+        var wave = new float[stripeCount * ChunkSize];
 
         foreach(var (stripe, bin) in locations) {
             var startSample = ChunkSize * (stripe - 1);
             var endSample = startSample + 2 * ChunkSize;
 
             for(var t = startSample; t < endSample; t++)
-                wave[t] += Math.Sin(2 * Math.PI * Spectro.BinToFreq(bin) * t / SampleRate)
-                    * Math.Sqrt(Spectro.GetMagnitudeSquared(stripe, bin))
+                wave[t] += MathF.Sin(2 * MathF.PI * Spectro.BinToFreq(bin) * t / SampleRate)
+                    * MathF.Sqrt(Spectro.GetMagnitudeSquared(stripe, bin))
                     * Envelope[t - startSample];
         }
 

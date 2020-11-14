@@ -3,20 +3,19 @@ using MathNet.Numerics.IntegralTransforms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 class Spectrogram {
     readonly int SampleRate;
     readonly int FFTSize;
-    readonly double[] Hann;
-    readonly List<double[]> Stripes = new List<double[]>();
+    readonly float[] Hann;
+    readonly List<float[]> Stripes = new List<float[]>();
 
     public readonly int BinCount;
 
     public Spectrogram(int sampleRate, int fftSize) {
         SampleRate = sampleRate;
         FFTSize = fftSize;
-        Hann = Window.Hann(fftSize);
+        Hann = Array.ConvertAll(Window.Hann(fftSize), Convert.ToSingle);
         BinCount = fftSize / 2 + 1;
     }
 
@@ -26,33 +25,33 @@ class Spectrogram {
         if(samples.Count != FFTSize)
             throw new ArgumentException();
 
-        var fft = new Complex[FFTSize];
+        var fft = new Complex32[FFTSize];
         for(var i = 0; i < FFTSize; i++)
-            fft[i] = new Complex(samples[i] * Hann[i], 0);
+            fft[i] = new Complex32(samples[i] * Hann[i], 0);
 
         Fourier.Forward(fft, FourierOptions.NoScaling);
 
-        var stripe = new double[BinCount];
+        var stripe = new float[BinCount];
 
         for(var bin = 0; bin < BinCount; bin++)
-            stripe[bin] = fft[bin].MagnitudeSquared();
+            stripe[bin] = fft[bin].MagnitudeSquared;
 
         Stripes.Add(stripe);
     }
 
-    public double GetMagnitudeSquared(int stripe, int bin) {
+    public float GetMagnitudeSquared(int stripe, int bin) {
         return Stripes[stripe][bin];
     }
 
-    public int FreqToBin(double freq) {
+    public int FreqToBin(float freq) {
         return Convert.ToInt32(freq * FFTSize / SampleRate);
     }
 
-    public double BinToFreq(int bin) {
-        return 1d * bin * SampleRate / FFTSize;
+    public float BinToFreq(int bin) {
+        return 1f * bin * SampleRate / FFTSize;
     }
 
-    public double FindMaxMagnitudeSquared() {
+    public float FindMaxMagnitudeSquared() {
         return Stripes.Max(s => s.Max());
     }
 
