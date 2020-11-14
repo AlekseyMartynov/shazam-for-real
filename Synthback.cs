@@ -19,18 +19,18 @@ class Synthback {
     }
 
     public void Synth(string filename) {
-        var locations = LandmarkFinder.EnumerateAllLocations().ToArray();
+        var landmarks = LandmarkFinder.EnumerateAllLandmarks().ToArray();
 
-        var stripeCount = 1 + locations.Max(l => l.stripe);
+        var stripeCount = 1 + landmarks.Max(l => l.StripeIndex);
         var wave = new float[stripeCount * ChunkSize];
 
-        foreach(var (stripe, bin) in locations) {
-            var startSample = ChunkSize * (stripe - 1);
+        foreach(var l in landmarks) {
+            var startSample = ChunkSize * (l.StripeIndex - 1);
             var endSample = startSample + 2 * ChunkSize;
 
             for(var t = startSample; t < endSample; t++)
-                wave[t] += MathF.Sin(2 * MathF.PI * Spectro.BinToFreq(bin) * t / SampleRate)
-                    * MathF.Sqrt(Spectro.GetMagnitudeSquared(stripe, bin))
+                wave[t] += MathF.Sin(2 * MathF.PI * Spectro.BinToFreq(l.InterpolatedBin) * t / SampleRate)
+                    * MathF.Exp(l.InterpolatedLogMagnitude / UInt16.MaxValue)
                     * Envelope[t - startSample];
         }
 

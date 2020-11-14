@@ -29,11 +29,10 @@ class Painter {
 
             using(var g = Graphics.FromImage(bitmap)) {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                foreach(var (x, y) in Finder.EnumerateAllLocations()) {
-                    var magnitudeSquared = Spectro.GetMagnitudeSquared(x, y);
-                    var radius = 3 + Convert.ToInt32(4 * MathF.Sqrt(magnitudeSquared / maxMagnitudeSquared));
-                    var cx = x;
-                    var cy = h - y - 1;
+                foreach(var l in Finder.EnumerateAllLandmarks()) {
+                    var radius = 8 * l.InterpolatedLogMagnitude / UInt16.MaxValue;
+                    var cx = l.StripeIndex;
+                    var cy = h - l.InterpolatedBin - 1;
                     g.FillEllipse(Brushes.Yellow, cx - radius, cy - radius, 2 * radius, 2 * radius);
                 }
             }

@@ -135,8 +135,8 @@ static class Sig {
                     throw new InvalidOperationException();
 
                 writer.Write(Convert.ToByte(p.StripeIndex - stripeIndex));
-                writer.Write(p.NormalizedMagnitude);
-                writer.Write(p.NormalizedBin);
+                writer.Write(Convert.ToUInt16(p.InterpolatedLogMagnitude));
+                writer.Write(Convert.ToUInt16(64 * p.InterpolatedBin));
 
                 stripeIndex = p.StripeIndex;
             }

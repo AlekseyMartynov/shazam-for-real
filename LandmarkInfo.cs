@@ -2,12 +2,12 @@
 
 struct LandmarkInfo {
     public readonly int StripeIndex;
-    public readonly ushort NormalizedBin;
-    public readonly ushort NormalizedMagnitude;
+    public readonly float InterpolatedBin;
+    public readonly float InterpolatedLogMagnitude;
 
-    public LandmarkInfo(int stripeIndex, ushort normalizedBin, ushort normalizedMagnitude) {
+    public LandmarkInfo(int stripeIndex, float interpolatedBin, float interpolatedLogMagnitude) {
         StripeIndex = stripeIndex;
-        NormalizedBin = normalizedBin;
-        NormalizedMagnitude = normalizedMagnitude;
+        InterpolatedBin = interpolatedBin;
+        InterpolatedLogMagnitude = interpolatedLogMagnitude;
     }
 }

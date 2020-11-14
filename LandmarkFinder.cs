@@ -7,7 +7,7 @@ class LandmarkFinder {
         RADIUS_TIME = 47,
         RADIUS_FREQ = 9;
 
-    // Locations per second in a band
+    // Landmarks per second in a band
     const int RATE = 12;
 
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
@@ -19,7 +19,7 @@ class LandmarkFinder {
     readonly Spectrogram Spectro;
     readonly TimeSpan StripeDuration;
     readonly int MinBin, MaxBin;
-    readonly IReadOnlyList<List<(int stripe, int bin)>> Bands;
+    readonly IReadOnlyList<List<LandmarkInfo>> Bands;
 
     public LandmarkFinder(Spectrogram spectro, TimeSpan stripeDuration) {
         Spectro = spectro;
@@ -29,7 +29,7 @@ class LandmarkFinder {
         MaxBin = Math.Min(spectro.FreqToBin(BAND_FREQS.Max()), spectro.BinCount - RADIUS_FREQ);
 
         Bands = Enumerable.Range(0, BAND_FREQS.Count - 1)
-            .Select(_ => new List<(int, int)>())
+            .Select(_ => new List<LandmarkInfo>())
             .ToList();
     }
 
@@ -45,35 +45,33 @@ class LandmarkFinder {
             if(!IsPeak(stripe, bin, 3, RADIUS_FREQ))
                 continue;
 
-            AddLocation(stripe, bin);
+            AddLandmarkAt(stripe, bin);
         }
     }
 
     public IEnumerable<IEnumerable<LandmarkInfo>> EnumerateBandedLandmarks() {
-        return Bands.Select(locations => locations.Select(LocationToLandmark));
+        return Bands;
     }
 
-    public IEnumerable<(int stripe, int bin)> EnumerateAllLocations() {
+    public IEnumerable<LandmarkInfo> EnumerateAllLandmarks() {
         return Bands.SelectMany(i => i);
     }
 
-    int GetBandIndex(int bin) {
+    int GetBandIndex(float bin) {
         var freq = Spectro.BinToFreq(bin);
 
         if(freq < BAND_FREQS[0])
-            throw new ArgumentOutOfRangeException();
+            return -1;
 
         for(var i = 1; i < BAND_FREQS.Count; i++) {
             if(freq < BAND_FREQS[i])
                 return i - 1;
         }
 
-        throw new ArgumentOutOfRangeException();
+        return -1;
     }
 
-    LandmarkInfo LocationToLandmark((int, int) loc) {
-        var (stripe, bin) = loc;
-
+    LandmarkInfo CreateLandmarkAt(int stripe, int bin) {
         // Quadratic Interpolation of Spectral Peaks
         // https://stackoverflow.com/a/59140547
         // https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html
@@ -89,8 +87,8 @@ class LandmarkFinder {
 
         return new LandmarkInfo(
             stripe,
-            Convert.ToUInt16(64 * (bin + p)),
-            Convert.ToUInt16(beta - (alpha - gamma) * p / 4)
+            bin + p,
+            beta - (alpha - gamma) * p / 4
         );
     }
 
@@ -112,23 +110,28 @@ class LandmarkFinder {
         return true;
     }
 
-    void AddLocation(int stripe, int bin) {
-        var bandLocations = Bands[GetBandIndex(bin)];
+    void AddLandmarkAt(int stripe, int bin) {
+        var newLandmark = CreateLandmarkAt(stripe, bin);
 
-        if(bandLocations.Any()) {
-            var capturedDuration = StripeDuration.TotalSeconds * (stripe - bandLocations.First().stripe);
+        var bandIndex = GetBandIndex(newLandmark.InterpolatedBin);
+        if(bandIndex < 0)
+            return;
+
+        var bandLandmarks = Bands[bandIndex];
+
+        if(bandLandmarks.Any()) {
+            var capturedDuration = StripeDuration.TotalSeconds * (stripe - bandLandmarks.First().StripeIndex);
             var allowedCount = 1 + capturedDuration * RATE;
-            if(bandLocations.Count > allowedCount) {
-                var magnitudeSquared = Spectro.GetMagnitudeSquared(stripe, bin);
-                var pruneIndex = bandLocations.FindLastIndex(l => Spectro.GetMagnitudeSquared(l.stripe, l.bin) < magnitudeSquared);
+            if(bandLandmarks.Count > allowedCount) {
+                var pruneIndex = bandLandmarks.FindLastIndex(l => l.InterpolatedLogMagnitude < newLandmark.InterpolatedLogMagnitude);
                 if(pruneIndex < 0)
                     return;
 
-                bandLocations.RemoveAt(pruneIndex);
+                bandLandmarks.RemoveAt(pruneIndex);
             }
         }
 
-        bandLocations.Add((stripe, bin));
+        bandLandmarks.Add(newLandmark);
     }
 
 }

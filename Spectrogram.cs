@@ -47,8 +47,8 @@ class Spectrogram {
         return Convert.ToInt32(freq * FFTSize / SampleRate);
     }
 
-    public float BinToFreq(int bin) {
-        return 1f * bin * SampleRate / FFTSize;
+    public float BinToFreq(float bin) {
+        return bin * SampleRate / FFTSize;
     }
 
     public float FindMaxMagnitudeSquared() {
