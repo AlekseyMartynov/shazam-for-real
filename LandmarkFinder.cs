@@ -13,8 +13,8 @@ class LandmarkFinder {
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
     static readonly double
-        MIN_MAGN = 64,
-        LOG_MIN_MAGN = Math.Log(MIN_MAGN);
+        MIN_MAGN_SQUARED = 64 * 64,
+        LOG_MIN_MAGN_SQUARED = Math.Log(MIN_MAGN_SQUARED);
 
     readonly Spectrogram Spectro;
     readonly TimeSpan StripeDuration;
@@ -36,7 +36,7 @@ class LandmarkFinder {
     public void Find(int stripe) {
         for(var bin = MinBin; bin < MaxBin; bin++) {
 
-            if(Spectro.GetMagnitude(stripe, bin) < MIN_MAGN)
+            if(Spectro.GetMagnitudeSquared(stripe, bin) < MIN_MAGN_SQUARED)
                 continue;
 
             if(!IsPeak(stripe, bin, RADIUS_TIME, 0))
@@ -96,16 +96,16 @@ class LandmarkFinder {
 
     double GetLogMagnitude(int stripe, int bin) {
         // Pack 64..2^38 into uint16
-        return 3 * 4096 * (Math.Log(Spectro.GetMagnitude(stripe, bin)) / LOG_MIN_MAGN - 1);
+        return 3 * 4096 * (Math.Log(Spectro.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED - 1);
     }
 
     bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {
-        var center = Spectro.GetMagnitude(stripe, bin);
+        var center = Spectro.GetMagnitudeSquared(stripe, bin);
         for(var s = -stripeRadius; s <= stripeRadius; s++) {
             for(var b = -binRadius; b <= binRadius; b++) {
                 if(s == 0 && b == 0)
                     continue;
-                if(Spectro.GetMagnitude(stripe + s, bin + b) >= center)
+                if(Spectro.GetMagnitudeSquared(stripe + s, bin + b) >= center)
                     return false;
             }
         }
@@ -119,8 +119,8 @@ class LandmarkFinder {
             var capturedDuration = StripeDuration.TotalSeconds * (stripe - bandLocations.First().stripe);
             var allowedCount = 1 + capturedDuration * RATE;
             if(bandLocations.Count > allowedCount) {
-                var magnitude = Spectro.GetMagnitude(stripe, bin);
-                var pruneIndex = bandLocations.FindLastIndex(l => Spectro.GetMagnitude(l.stripe, l.bin) < magnitude);
+                var magnitudeSquared = Spectro.GetMagnitudeSquared(stripe, bin);
+                var pruneIndex = bandLocations.FindLastIndex(l => Spectro.GetMagnitudeSquared(l.stripe, l.bin) < magnitudeSquared);
                 if(pruneIndex < 0)
                     return;
 

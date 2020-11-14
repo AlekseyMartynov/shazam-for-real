@@ -30,7 +30,7 @@ class Synthback {
 
             for(var t = startSample; t < endSample; t++)
                 wave[t] += Math.Sin(2 * Math.PI * Spectro.BinToFreq(bin) * t / SampleRate)
-                    * Spectro.GetMagnitude(stripe, bin)
+                    * Math.Sqrt(Spectro.GetMagnitudeSquared(stripe, bin))
                     * Envelope[t - startSample];
         }
 

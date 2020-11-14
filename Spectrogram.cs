@@ -35,12 +35,12 @@ class Spectrogram {
         var stripe = new double[BinCount];
 
         for(var bin = 0; bin < BinCount; bin++)
-            stripe[bin] = fft[bin].Magnitude;
+            stripe[bin] = fft[bin].MagnitudeSquared();
 
         Stripes.Add(stripe);
     }
 
-    public double GetMagnitude(int stripe, int bin) {
+    public double GetMagnitudeSquared(int stripe, int bin) {
         return Stripes[stripe][bin];
     }
 
@@ -52,7 +52,7 @@ class Spectrogram {
         return 1d * bin * SampleRate / FFTSize;
     }
 
-    public double FindMaxMagnitude() {
+    public double FindMaxMagnitudeSquared() {
         return Stripes.Max(s => s.Max());
     }
 
