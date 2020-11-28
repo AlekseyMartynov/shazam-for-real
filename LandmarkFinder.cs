@@ -12,21 +12,19 @@ class LandmarkFinder {
 
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
+    static readonly int
+        MIN_BIN = Math.Max(Analysis.FreqToBin(BAND_FREQS.Min()), RADIUS_FREQ),
+        MAX_BIN = Math.Min(Analysis.FreqToBin(BAND_FREQS.Max()), Analysis.BIN_COUNT - RADIUS_FREQ);
+
     static readonly float
-        MIN_MAGN_SQUARED = 64 * 64,
+        MIN_MAGN_SQUARED = 1f / 512 / 512,
         LOG_MIN_MAGN_SQUARED = MathF.Log(MIN_MAGN_SQUARED);
 
-    readonly Spectrogram Spectro;
-    readonly TimeSpan StripeDuration;
-    readonly int MinBin, MaxBin;
+    readonly Analysis Analysis;
     readonly IReadOnlyList<List<LandmarkInfo>> Bands;
 
-    public LandmarkFinder(Spectrogram spectro, TimeSpan stripeDuration) {
-        Spectro = spectro;
-        StripeDuration = stripeDuration;
-
-        MinBin = Math.Max(spectro.FreqToBin(BAND_FREQS.Min()), RADIUS_FREQ);
-        MaxBin = Math.Min(spectro.FreqToBin(BAND_FREQS.Max()), spectro.BinCount - RADIUS_FREQ);
+    public LandmarkFinder(Analysis analysis) {
+        Analysis = analysis;
 
         Bands = Enumerable.Range(0, BAND_FREQS.Count - 1)
             .Select(_ => new List<LandmarkInfo>())
@@ -34,9 +32,9 @@ class LandmarkFinder {
     }
 
     public void Find(int stripe) {
-        for(var bin = MinBin; bin < MaxBin; bin++) {
+        for(var bin = MIN_BIN; bin < MAX_BIN; bin++) {
 
-            if(Spectro.GetMagnitudeSquared(stripe, bin) < MIN_MAGN_SQUARED)
+            if(Analysis.GetMagnitudeSquared(stripe, bin) < MIN_MAGN_SQUARED)
                 continue;
 
             if(!IsPeak(stripe, bin, RADIUS_TIME, 0))
@@ -58,7 +56,7 @@ class LandmarkFinder {
     }
 
     int GetBandIndex(float bin) {
-        var freq = Spectro.BinToFreq(bin);
+        var freq = Analysis.BinToFreq(bin);
 
         if(freq < BAND_FREQS[0])
             return -1;
@@ -93,17 +91,16 @@ class LandmarkFinder {
     }
 
     float GetLogMagnitude(int stripe, int bin) {
-        // Pack 64..2^38 into uint16
-        return 3 * 4096 * (MathF.Log(Spectro.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED - 1);
+        return 18 * 1024  * (1 - MathF.Log(Analysis.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED);
     }
 
     bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {
-        var center = Spectro.GetMagnitudeSquared(stripe, bin);
+        var center = Analysis.GetMagnitudeSquared(stripe, bin);
         for(var s = -stripeRadius; s <= stripeRadius; s++) {
             for(var b = -binRadius; b <= binRadius; b++) {
                 if(s == 0 && b == 0)
                     continue;
-                if(Spectro.GetMagnitudeSquared(stripe + s, bin + b) >= center)
+                if(Analysis.GetMagnitudeSquared(stripe + s, bin + b) >= center)
                     return false;
             }
         }
@@ -120,7 +117,7 @@ class LandmarkFinder {
         var bandLandmarks = Bands[bandIndex];
 
         if(bandLandmarks.Any()) {
-            var capturedDuration = StripeDuration.TotalSeconds * (stripe - bandLandmarks.First().StripeIndex);
+            var capturedDuration = 1d / Analysis.CHUNKS_PER_SECOND * (stripe - bandLandmarks.First().StripeIndex);
             var allowedCount = 1 + capturedDuration * RATE;
             if(bandLandmarks.Count > allowedCount) {
                 var pruneIndex = bandLandmarks.FindLastIndex(l => l.InterpolatedLogMagnitude < newLandmark.InterpolatedLogMagnitude);

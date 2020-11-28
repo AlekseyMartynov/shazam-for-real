@@ -9,10 +9,6 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave;
 
 class Program {
-    const int SAMPLE_RATE = 16000;
-    const int CHUNK_SIZE = SAMPLE_RATE / 125;
-    const int CHUNK_COUNT = 16;
-    const int FFT_SIZE = CHUNK_SIZE * CHUNK_COUNT;
 
     static void Main(string[] args) {
         Console.WriteLine("SPACE - tag, Q - quit");
@@ -45,9 +41,8 @@ class Program {
     }
 
     static ShazamResult CaptureAndTag() {
-        var wave = new WaveWindow(SAMPLE_RATE, CHUNK_SIZE, CHUNK_COUNT);
-        var spectro = new Spectrogram(SAMPLE_RATE, FFT_SIZE);
-        var finder = new LandmarkFinder(spectro, TimeSpan.FromSeconds(1d * CHUNK_SIZE / SAMPLE_RATE));
+        var analysis = new Analysis();
+        var finder = new LandmarkFinder(analysis);
 
         using(var capture = new WasapiCapture()) {
             var captureBuf = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false };
@@ -58,7 +53,8 @@ class Program {
 
             capture.StartRecording();
 
-            using(var resampler = new MediaFoundationResampler(captureBuf, new WaveFormat(SAMPLE_RATE, 16, 1))) {
+            using(var resampler = new MediaFoundationResampler(captureBuf, new WaveFormat(Analysis.SAMPLE_RATE, 16, 1))) {
+                var sampleProvider = resampler.ToSampleProvider();
                 var retryMs = 3000;
                 var tagId = Guid.NewGuid().ToString();
 
@@ -66,28 +62,17 @@ class Program {
                     while(captureBuf.BufferedDuration.TotalSeconds < 1)
                         Thread.Sleep(100);
 
-                    var chunkBuf = new byte[2 * CHUNK_SIZE];
-                    if(resampler.Read(chunkBuf, 0, chunkBuf.Length) != chunkBuf.Length)
-                        throw new Exception();
+                    analysis.ReadChunk(sampleProvider);
 
-                    var chunk = new short[CHUNK_SIZE];
-                    for(var i = 0; i < CHUNK_SIZE; i++)
-                        chunk[i] = BitConverter.ToInt16(chunkBuf, i * 2);
+                    if(analysis.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
+                        finder.Find(analysis.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
 
-                    wave.AddChunk(chunk);
+                    if(analysis.ProcessedMs >= retryMs) {
+                        //new Painter(analysis, finder).Paint("c:/temp/spectro.png");
+                        //new Synthback(analysis, finder).Synth("c:/temp/synthback.raw");
 
-                    if(wave.IsFull)
-                        spectro.AddStripe(wave.GetSamples());
-
-                    if(spectro.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
-                        finder.Find(spectro.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
-
-                    if(wave.ProcessedMs >= retryMs) {
-                        //new Painter(spectro, finder).Paint("c:/temp/spectro.png");
-                        //new Synthback(spectro, finder, SAMPLE_RATE, CHUNK_SIZE).Synth("c:/temp/synthback.raw");
-
-                        var sigBytes = Sig.Write(SAMPLE_RATE, wave.ProcessedSamples, finder);
-                        var result = ShazamApi.SendRequest(tagId, wave.ProcessedMs, sigBytes).GetAwaiter().GetResult();
+                        var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples, finder);
+                        var result = ShazamApi.SendRequest(tagId, analysis.ProcessedMs, sigBytes).GetAwaiter().GetResult();
                         if(result.Success)
                             return result;
 
