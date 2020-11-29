@@ -10,7 +10,7 @@ static class Sig {
     public static byte[] Write(int sampleRate, int sampleCount, LandmarkFinder finder) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
-            writer.Write(0xCAFE2580);
+            writer.Write(0xCAFE2580); // Dialling "2580" on your phone and holding it up to the music, https://www.shazam.com/company
             writer.Write(-1);
             writer.Write(-1);
             writer.Write(0x94119C00);
@@ -76,7 +76,7 @@ static class Sig {
             writer.Write(0xDEADBEEF);
             writer.Write(Convert.ToInt32(sampleCount * 8000L / sampleRate));
             writer.Write(0);
-            writer.Write(031100000);
+            writer.Write(0x31100000);
             writer.Write(0x0f);
             writer.Write(0x42700000);
 
