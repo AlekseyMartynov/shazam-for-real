@@ -44,8 +44,13 @@ class Analysis {
         Fourier.Forward(FFTBuf, FourierOptions.NoScaling);
 
         var stripe = new float[BIN_COUNT];
-        for(var bin = 0; bin < BIN_COUNT; bin++)
-            stripe[bin] = FFTBuf[bin].MagnitudeSquared;
+        for(var bin = 0; bin < BIN_COUNT; bin++) {
+            // Used in official Shazam since 7.11.0
+            // https://github.com/marin-m/SongRec/issues/10#issuecomment-731527377
+            const int scaling = 2;
+
+            stripe[bin] = scaling * FFTBuf[bin].MagnitudeSquared;
+        }
 
         Stripes.Add(stripe);
     }
