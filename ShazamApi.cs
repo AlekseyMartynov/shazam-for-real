@@ -9,6 +9,10 @@ static class ShazamApi {
     static readonly HttpClient HTTP = new HttpClient();
     static readonly string INSTALLATION_ID = Guid.NewGuid().ToString();
 
+    static ShazamApi() {
+        HTTP.DefaultRequestHeaders.UserAgent.ParseAdd("curl/7");
+    }
+
     public static async Task<ShazamResult> SendRequest(string tagId, int samplems, byte[] sig) {
         var payload = new {
             signature = new {
