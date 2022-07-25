@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,19 +11,19 @@ using NAudio.Wave;
 class Program {
 
     static void Main(string[] args) {
-        Console.WriteLine("SPACE - tag, Q - quit");
-
+        Console.WriteLine("SPACE - tag from microphone, TAB - tag from pc audio, Q - quit");
+        
         while(true) {
             var key = Console.ReadKey(true);
 
             if(Char.ToLower(key.KeyChar) == 'q')
                 break;
 
-            if(key.Key == ConsoleKey.Spacebar) {
+            if(key.Key == ConsoleKey.Spacebar || key.Key == ConsoleKey.Tab) {
                 Console.Write("Listening... ");
 
                 try {
-                    var result = CaptureAndTag();
+                    var result = CaptureAndTag(key.Key);
 
                     if(result.Success) {
                         Console.CursorLeft = 0;
@@ -40,11 +40,11 @@ class Program {
 
     }
 
-    static ShazamResult CaptureAndTag() {
+    static ShazamResult CaptureAndTag(ConsoleKey key) {
         var analysis = new Analysis();
         var finder = new LandmarkFinder(analysis);
 
-        using(var capture = new WasapiCapture()) {
+        using(var capture = key == ConsoleKey.Spacebar ? new WasapiCapture() : new WasapiLoopbackCapture()) {
             var captureBuf = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false };
 
             capture.DataAvailable += (s, e) => {
