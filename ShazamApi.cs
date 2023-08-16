@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 static class ShazamApi {
@@ -13,16 +16,21 @@ static class ShazamApi {
     }
 
     public static async Task<ShazamResult> SendRequestAsync(string tagId, int samplems, byte[] sig) {
-        var payload = new {
-            signature = new {
-                uri = "data:audio/vnd.shazam.sig;base64," + Convert.ToBase64String(sig),
-                samplems
-            }
-        };
+        using var payloadStream = new MemoryStream();
+        using var payloadWriter = new Utf8JsonWriter(payloadStream);
+
+        payloadWriter.WriteStartObject();
+        payloadWriter.WritePropertyName("signature");
+        payloadWriter.WriteStartObject();
+        payloadWriter.WriteString("uri", "data:audio/vnd.shazam.sig;base64," + Convert.ToBase64String(sig));
+        payloadWriter.WriteNumber("samplems", samplems);
+        payloadWriter.WriteEndObject();
+        payloadWriter.WriteEndObject();
+        payloadWriter.Flush();
 
         var url = "https://amp.shazam.com/discovery/v5/en/US/android/-/tag/" + INSTALLATION_ID + "/" + tagId;
         var postData = new StringContent(
-            JsonSerializer.Serialize(payload),
+            Encoding.UTF8.GetString(payloadStream.GetBuffer()),
             Encoding.UTF8,
             "application/json"
         );
@@ -30,7 +38,8 @@ static class ShazamApi {
         var result = new ShazamResult();
 
         var res = await HTTP.PostAsync(url, postData);
-        var obj = JsonSerializer.Deserialize<JsonElement>(await res.Content.ReadAsStringAsync());
+        var json = await res.Content.ReadAsStringAsync();
+        var obj = JsonSerializer.Deserialize(json, ShazamApiJsonSerializerContext.Default.JsonElement);
 
         if(obj.TryGetProperty("track", out var track)) {
             result.Success = true;
@@ -45,4 +54,8 @@ static class ShazamApi {
         return result;
     }
 
+}
+
+[JsonSerializable(typeof(JsonElement))]
+partial class ShazamApiJsonSerializerContext : JsonSerializerContext {
 }
