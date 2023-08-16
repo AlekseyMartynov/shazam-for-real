@@ -11,13 +11,19 @@ using NAudio.Wave;
 class Program {
 
     static async Task Main(string[] args) {
-        Console.WriteLine("SPACE - tag, Q - quit");
+        Console.WriteLine("SPACE - tag, S - source, Q - quit");
+        CaptureSourceHelper.Set(false);
 
         while(true) {
             var key = Console.ReadKey(true);
 
             if(Char.ToLower(key.KeyChar) == 'q')
                 break;
+
+            if(Char.ToLower(key.KeyChar) == 's') {
+                CaptureSourceHelper.Toggle();
+                continue;
+            }
 
             if(key.Key == ConsoleKey.Spacebar) {
                 Console.Write("Listening... ");
@@ -44,7 +50,7 @@ class Program {
         var analysis = new Analysis();
         var finder = new LandmarkFinder(analysis);
 
-        using(var capture = new WasapiCapture()) {
+        using(var capture = CaptureSourceHelper.Loopback ? new WasapiLoopbackCapture() : new WasapiCapture()) {
             var captureBuf = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false };
 
             capture.DataAvailable += (s, e) => {
