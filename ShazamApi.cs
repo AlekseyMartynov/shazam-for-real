@@ -12,7 +12,7 @@ static class ShazamApi {
         HTTP.DefaultRequestHeaders.UserAgent.ParseAdd("curl/7");
     }
 
-    public static async Task<ShazamResult> SendRequest(string tagId, int samplems, byte[] sig) {
+    public static async Task<ShazamResult> SendRequestAsync(string tagId, int samplems, byte[] sig) {
         var payload = new {
             signature = new {
                 uri = "data:audio/vnd.shazam.sig;base64," + Convert.ToBase64String(sig),

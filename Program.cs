@@ -10,7 +10,7 @@ using NAudio.Wave;
 
 class Program {
 
-    static void Main(string[] args) {
+    static async Task Main(string[] args) {
         Console.WriteLine("SPACE - tag, Q - quit");
 
         while(true) {
@@ -23,7 +23,7 @@ class Program {
                 Console.Write("Listening... ");
 
                 try {
-                    var result = CaptureAndTag();
+                    var result = await CaptureAndTagAsync();
 
                     if(result.Success) {
                         Console.CursorLeft = 0;
@@ -40,7 +40,7 @@ class Program {
 
     }
 
-    static ShazamResult CaptureAndTag() {
+    static async Task<ShazamResult> CaptureAndTagAsync() {
         var analysis = new Analysis();
         var finder = new LandmarkFinder(analysis);
 
@@ -72,7 +72,7 @@ class Program {
                         //new Synthback(analysis, finder).Synth("c:/temp/synthback.raw");
 
                         var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples, finder);
-                        var result = ShazamApi.SendRequest(tagId, analysis.ProcessedMs, sigBytes).GetAwaiter().GetResult();
+                        var result = await ShazamApi.SendRequestAsync(tagId, analysis.ProcessedMs, sigBytes);
                         if(result.Success)
                             return result;
 
