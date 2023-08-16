@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 static class ShazamApi {
@@ -23,7 +22,7 @@ static class ShazamApi {
 
         var url = "https://amp.shazam.com/discovery/v5/en/US/android/-/tag/" + INSTALLATION_ID + "/" + tagId;
         var postData = new StringContent(
-            JsonConvert.SerializeObject(payload),
+            JsonSerializer.Serialize(payload),
             Encoding.UTF8,
             "application/json"
         );
@@ -31,16 +30,16 @@ static class ShazamApi {
         var result = new ShazamResult();
 
         var res = await HTTP.PostAsync(url, postData);
-        var obj = JsonConvert.DeserializeObject<JToken>(await res.Content.ReadAsStringAsync());
-        var track = obj.Value<JToken>("track");
+        var obj = JsonSerializer.Deserialize<JsonElement>(await res.Content.ReadAsStringAsync());
 
-        if(track != null) {
+        if(obj.TryGetProperty("track", out var track)) {
             result.Success = true;
-            result.Url = track.Value<string>("url");
-            result.Title = track.Value<string>("title");
-            result.Artist = track.Value<string>("subtitle");
+            result.Url = track.GetProperty("url").GetString();
+            result.Title = track.GetProperty("title").GetString();
+            result.Artist = track.GetProperty("subtitle").GetString();
         } else {
-            result.RetryMs = obj.Value<int>("retryms");
+            if(obj.TryGetProperty("retryms", out var retryMs))
+                result.RetryMs = retryMs.GetInt32();
         }
 
         return result;
