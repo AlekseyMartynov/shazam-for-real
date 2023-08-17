@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -29,11 +28,8 @@ static class ShazamApi {
         payloadWriter.Flush();
 
         var url = "https://amp.shazam.com/discovery/v5/en/US/android/-/tag/" + INSTALLATION_ID + "/" + tagId;
-        var postData = new StringContent(
-            Encoding.UTF8.GetString(payloadStream.GetBuffer()),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var postData = new ByteArrayContent(payloadStream.GetBuffer(), 0, (int)payloadStream.Length);
+        postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
         var result = new ShazamResult();
 
