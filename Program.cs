@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NAudio.CoreAudioApi;
 using NAudio.Wave;
 
 class Program {
@@ -50,43 +49,33 @@ class Program {
         var analysis = new Analysis();
         var finder = new LandmarkFinder(analysis);
 
-        using(var capture = CaptureSourceHelper.Loopback ? new WasapiLoopbackCapture() : new WasapiCapture()) {
-            var captureBuf = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false };
+        using var captureHelper = new WasapiCaptureHelper(new WaveFormat(Analysis.SAMPLE_RATE, 16, 1));
+        captureHelper.Start();
 
-            capture.DataAvailable += (s, e) => {
-                captureBuf.AddSamples(e.Buffer, 0, e.BytesRecorded);
-            };
+        var chunk = new float[Analysis.CHUNK_SIZE];
+        var retryMs = 3000;
+        var tagId = Guid.NewGuid().ToString();
 
-            capture.StartRecording();
+        while(true) {
+            ReadChunk(captureHelper.SampleProvider, chunk);
 
-            using(var resampler = new MediaFoundationResampler(captureBuf, new WaveFormat(Analysis.SAMPLE_RATE, 16, 1))) {
-                var sampleProvider = resampler.ToSampleProvider();
-                var chunk = new float[Analysis.CHUNK_SIZE];
-                var retryMs = 3000;
-                var tagId = Guid.NewGuid().ToString();
+            analysis.AddChunk(chunk);
 
-                while(true) {
-                    ReadChunk(sampleProvider, chunk);
+            if(analysis.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
+                finder.Find(analysis.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
 
-                    analysis.AddChunk(chunk);
+            if(analysis.ProcessedMs >= retryMs) {
+                //new Painter(analysis, finder).Paint("c:/temp/spectro.png");
+                //new Synthback(analysis, finder).Synth("c:/temp/synthback.raw");
 
-                    if(analysis.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
-                        finder.Find(analysis.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
+                var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples, finder);
+                var result = await ShazamApi.SendRequestAsync(tagId, analysis.ProcessedMs, sigBytes);
+                if(result.Success)
+                    return result;
 
-                    if(analysis.ProcessedMs >= retryMs) {
-                        //new Painter(analysis, finder).Paint("c:/temp/spectro.png");
-                        //new Synthback(analysis, finder).Synth("c:/temp/synthback.raw");
-
-                        var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples, finder);
-                        var result = await ShazamApi.SendRequestAsync(tagId, analysis.ProcessedMs, sigBytes);
-                        if(result.Success)
-                            return result;
-
-                        retryMs = result.RetryMs;
-                        if(retryMs == 0)
-                            return result;
-                    }
-                }
+                retryMs = result.RetryMs;
+                if(retryMs == 0)
+                    return result;
             }
         }
     }
