@@ -1,6 +1,5 @@
 ﻿using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
-using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,9 +24,11 @@ class Analysis {
 
     int WindowRingPos => ProcessedSamples % WINDOW_SIZE;
 
-    public void ReadChunk(ISampleProvider sampleProvider) {
-        if(sampleProvider.Read(WindowRing, WindowRingPos, CHUNK_SIZE) != CHUNK_SIZE)
+    public void AddChunk(float[] chunk) {
+        if(chunk.Length != CHUNK_SIZE)
             throw new Exception();
+
+        Array.Copy(chunk, 0, WindowRing, WindowRingPos, CHUNK_SIZE);
 
         ProcessedSamples += CHUNK_SIZE;
 

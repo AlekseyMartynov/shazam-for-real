@@ -61,14 +61,14 @@ class Program {
 
             using(var resampler = new MediaFoundationResampler(captureBuf, new WaveFormat(Analysis.SAMPLE_RATE, 16, 1))) {
                 var sampleProvider = resampler.ToSampleProvider();
+                var chunk = new float[Analysis.CHUNK_SIZE];
                 var retryMs = 3000;
                 var tagId = Guid.NewGuid().ToString();
 
                 while(true) {
-                    while(captureBuf.BufferedDuration.TotalSeconds < 1)
-                        Thread.Sleep(100);
+                    ReadChunk(sampleProvider, chunk);
 
-                    analysis.ReadChunk(sampleProvider);
+                    analysis.AddChunk(chunk);
 
                     if(analysis.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
                         finder.Find(analysis.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
@@ -88,6 +88,23 @@ class Program {
                     }
                 }
             }
+        }
+    }
+
+    static void ReadChunk(ISampleProvider sampleProvider, float[] chunk) {
+        var offset = 0;
+        var expectedCount = chunk.Length;
+
+        while(true) {
+            var actualCount = sampleProvider.Read(chunk, offset, expectedCount);
+
+            if(actualCount == expectedCount)
+                return;
+
+            offset += actualCount;
+            expectedCount -= actualCount;
+
+            Thread.Sleep(100);
         }
     }
 }
