@@ -15,6 +15,7 @@
     <PublishTrimmed>true</PublishTrimmed>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <TargetName>$(AssemblyName).$(RuntimeIdentifier)</TargetName>
   </PropertyGroup>
 
   <ItemGroup>
