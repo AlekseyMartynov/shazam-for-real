@@ -49,7 +49,7 @@ class Program {
         var analysis = new Analysis();
         var finder = new LandmarkFinder(analysis);
 
-        using var captureHelper = new WasapiCaptureHelper(new WaveFormat(Analysis.SAMPLE_RATE, 16, 1));
+        using var captureHelper = CreateCaptureHelper();
         captureHelper.Start();
 
         var chunk = new float[Analysis.CHUNK_SIZE];
@@ -57,7 +57,13 @@ class Program {
         var tagId = Guid.NewGuid().ToString();
 
         while(true) {
-            ReadChunk(captureHelper.SampleProvider, chunk);
+            ReadChunk(captureHelper, chunk, out var sampleProviderChanged);
+
+            if(sampleProviderChanged) {
+                analysis = new Analysis();
+                finder = new LandmarkFinder(analysis);
+                continue;
+            }
 
             analysis.AddChunk(chunk);
 
@@ -80,11 +86,28 @@ class Program {
         }
     }
 
-    static void ReadChunk(ISampleProvider sampleProvider, float[] chunk) {
+    static ICaptureHelper CreateCaptureHelper() {
+        var format = new WaveFormat(Analysis.SAMPLE_RATE, 16, 1);
+#if MCI_CAPTURE
+        return new MciCaptureHelper(format);
+#else
+        return new WasapiCaptureHelper(format);
+#endif
+    }
+
+    static void ReadChunk(ICaptureHelper captureHelper, float[] chunk, out bool sampleProviderChanged) {
+        var sampleProvider = captureHelper.SampleProvider;
         var offset = 0;
         var expectedCount = chunk.Length;
 
+        sampleProviderChanged = false;
+
         while(true) {
+            if(captureHelper.SampleProvider != sampleProvider) {
+                sampleProviderChanged = true;
+                return;
+            }
+
             var actualCount = sampleProvider.Read(chunk, offset, expectedCount);
 
             if(actualCount == expectedCount)

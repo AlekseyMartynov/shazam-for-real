@@ -6,6 +6,7 @@
     <RootNamespace></RootNamespace>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <AssemblyName>Shazam</AssemblyName>
+    <DefineConstants>$(DefineConstants);MCI_CAPTURE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
