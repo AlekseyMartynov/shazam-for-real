@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6</TargetFramework>
+    <TargetFramework>net7</TargetFramework>
     <RootNamespace></RootNamespace>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <AssemblyName>Shazam</AssemblyName>
@@ -11,7 +11,7 @@
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <IsTrimmable>true</IsTrimmable>
-    <PublishSingleFile>true</PublishSingleFile>
+    <PublishAot>true</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
