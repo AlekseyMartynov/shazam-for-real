@@ -10,7 +10,7 @@ using NAudio.Wave;
 class Program {
 
     static async Task Main(string[] args) {
-        Console.WriteLine("SPACE - tag, S - source, Q - quit");
+        PrintHotkeys();
         CaptureSourceHelper.Set(false);
 
         while(true) {
@@ -19,10 +19,12 @@ class Program {
             if(Char.ToLower(key.KeyChar) == 'q')
                 break;
 
+#if !MCI_CAPTURE
             if(Char.ToLower(key.KeyChar) == 's') {
                 CaptureSourceHelper.Toggle();
                 continue;
             }
+#endif
 
             if(key.Key == ConsoleKey.Spacebar) {
                 Console.Write("Listening... ");
@@ -43,6 +45,18 @@ class Program {
             }
         }
 
+    }
+
+    static void PrintHotkeys() {
+        var list = new List<string> {
+            "SPACE - tag"
+        };
+
+#if !MCI_CAPTURE
+        list.Add("S - source");
+#endif
+        list.Add("Q - quit");
+        Console.WriteLine(String.Join(", ", list));
     }
 
     static async Task<ShazamResult> CaptureAndTagAsync() {
