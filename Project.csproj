@@ -10,10 +10,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <IsTrimmable>true</IsTrimmable>
     <PublishAot>true</PublishAot>
-    <PublishTrimmed>true</PublishTrimmed>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <DebuggerSupport>false</DebuggerSupport>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <TargetName>$(AssemblyName).$(RuntimeIdentifier)</TargetName>
   </PropertyGroup>
