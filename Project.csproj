@@ -25,12 +25,4 @@
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
 
-  <Target Name="ConfigureTrimming" BeforeTargets="PrepareForILLink">
-    <ItemGroup>
-      <ManagedAssemblyToLink Condition="'%(Filename)' == 'MathNet.Numerics' Or '%(Filename)' == 'NAudio.Core'">
-        <IsTrimmable>true</IsTrimmable>
-      </ManagedAssemblyToLink>
-    </ItemGroup>
-  </Target>
-
 </Project>
