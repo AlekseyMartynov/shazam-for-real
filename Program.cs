@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
 
@@ -30,7 +28,10 @@ class Program {
                 Console.Write("Listening... ");
 
                 try {
-                    var result = await CaptureAndTagAsync();
+                    using var captureHelper = CreateCaptureHelper();
+                    captureHelper.Start();
+
+                    var result = await CaptureAndTag.RunAsync(captureHelper, 3000);
 
                     if(result.Success) {
                         Console.CursorLeft = 0;
@@ -57,47 +58,6 @@ class Program {
         ));
     }
 
-    static async Task<ShazamResult> CaptureAndTagAsync() {
-        var analysis = new Analysis();
-        var finder = new LandmarkFinder(analysis);
-
-        using var captureHelper = CreateCaptureHelper();
-        captureHelper.Start();
-
-        var chunk = new float[Analysis.CHUNK_SIZE];
-        var retryMs = 3000;
-        var tagId = Guid.NewGuid().ToString();
-
-        while(true) {
-            ReadChunk(captureHelper, chunk, out var sampleProviderChanged);
-
-            if(sampleProviderChanged) {
-                analysis = new Analysis();
-                finder = new LandmarkFinder(analysis);
-                continue;
-            }
-
-            analysis.AddChunk(chunk);
-
-            if(analysis.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
-                finder.Find(analysis.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
-
-            if(analysis.ProcessedMs >= retryMs) {
-                //new Painter(analysis, finder).Paint("c:/temp/spectro.png");
-                //new Synthback(analysis, finder).Synth("c:/temp/synthback.raw");
-
-                var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples, finder);
-                var result = await ShazamApi.SendRequestAsync(tagId, analysis.ProcessedMs, sigBytes);
-                if(result.Success)
-                    return result;
-
-                retryMs = result.RetryMs;
-                if(retryMs == 0)
-                    return result;
-            }
-        }
-    }
-
     static ICaptureHelper CreateCaptureHelper() {
         var format = new WaveFormat(Analysis.SAMPLE_RATE, 16, 1);
 #if MCI_CAPTURE
@@ -107,28 +67,4 @@ class Program {
 #endif
     }
 
-    static void ReadChunk(ICaptureHelper captureHelper, float[] chunk, out bool sampleProviderChanged) {
-        var sampleProvider = captureHelper.SampleProvider;
-        var offset = 0;
-        var expectedCount = chunk.Length;
-
-        sampleProviderChanged = false;
-
-        while(true) {
-            if(captureHelper.SampleProvider != sampleProvider) {
-                sampleProviderChanged = true;
-                return;
-            }
-
-            var actualCount = sampleProvider.Read(chunk, offset, expectedCount);
-
-            if(actualCount == expectedCount)
-                return;
-
-            offset += actualCount;
-            expectedCount -= actualCount;
-
-            Thread.Sleep(100);
-        }
-    }
 }
