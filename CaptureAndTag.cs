@@ -17,6 +17,9 @@ static class CaptureAndTag {
         while(true) {
             var readChunkResult = ReadChunk(captureHelper);
 
+            if(readChunkResult == ReadChunkResult.EOF)
+                return null;
+
             if(readChunkResult == ReadChunkResult.SampleProviderChanged) {
                 analysis = new Analysis();
                 finder = new LandmarkFinder(analysis);
@@ -58,6 +61,9 @@ static class CaptureAndTag {
             if(actualCount == expectedCount)
                 return ReadChunkResult.OK;
 
+            if(!captureHelper.Live)
+                return ReadChunkResult.EOF;
+
             offset += actualCount;
             expectedCount -= actualCount;
 
@@ -67,6 +73,7 @@ static class CaptureAndTag {
 
     enum ReadChunkResult {
         OK,
-        SampleProviderChanged
+        SampleProviderChanged,
+        EOF
     }
 }

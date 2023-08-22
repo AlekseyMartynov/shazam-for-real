@@ -21,6 +21,7 @@ class WasapiCaptureHelper : ICaptureHelper {
     }
 
 
+    public bool Live => true;
     public ISampleProvider SampleProvider { get; private set; }
 
     public void Start() {

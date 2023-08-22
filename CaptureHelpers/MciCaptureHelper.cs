@@ -41,6 +41,7 @@ class MciCaptureHelper : ICaptureHelper {
             File.Delete(TEMP_FILE_PATH);
     }
 
+    public bool Live => true;
     public ISampleProvider SampleProvider { get; private set; }
 
     public void Start() {

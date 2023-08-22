@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 class Program {
 
     static async Task Main(string[] args) {
-        await Interactive.RunAsync();
+        if(args.Length > 0) {
+            await FileTag.RunAsync(args);
+        } else {
+            await Interactive.RunAsync();
+        }
     }
 
 }
