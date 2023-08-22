@@ -48,15 +48,13 @@ class Program {
     }
 
     static void PrintHotkeys() {
-        var list = new List<string> {
-            "SPACE - tag"
-        };
-
+        Console.WriteLine(String.Join(", ",
+            "SPACE - tag",
 #if !MCI_CAPTURE
-        list.Add("S - source");
+            "S - source",
 #endif
-        list.Add("Q - quit");
-        Console.WriteLine(String.Join(", ", list));
+            "Q - quit"
+        ));
     }
 
     static async Task<ShazamResult> CaptureAndTagAsync() {
