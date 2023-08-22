@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using NAudio.Wave;
 
-class Program {
+static class Interactive {
 
-    static async Task Main(string[] args) {
+    public static async Task RunAsync() {
         PrintHotkeys();
         CaptureSourceHelper.Set(false);
 
