@@ -14,7 +14,8 @@ static class FileTag {
             if(a == "till-end") {
                 tillEnd = true;
             } else {
-                startTime = TimeSpan.Parse(a);
+                if(!TryParseTime(a, out startTime))
+                    throw new Exception("Cannot parse time: " + a);
             }
         }
 
@@ -45,6 +46,24 @@ static class FileTag {
             if(!tillEnd)
                 break;
         }
+    }
+
+    static bool TryParseTime(string text, out TimeSpan result) {
+        var segments = text.Split(':');
+        var values = new int[3];
+        var count = Math.Min(3, segments.Length);
+
+        Array.Reverse(segments);
+
+        for(var i = 0; i < count; i++) {
+            if(!Int32.TryParse(segments[i], out values[i])) {
+                result = TimeSpan.Zero;
+                return false;
+            }
+        }
+
+        result = new TimeSpan(values[2], values[1], values[0]);
+        return true;
     }
 
 }
