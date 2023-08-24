@@ -1,5 +1,4 @@
 ﻿using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -104,10 +103,7 @@ class MciCaptureHelper : ICaptureHelper {
                 }
 
                 if(allGenerationsStopped) {
-                    SampleProvider = new ConcatenatingSampleProvider(new[] {
-                        SampleProvider,
-                        new EternalSilence(ICaptureHelper.WAVE_FORMAT)
-                    });
+                    SampleProvider = EternalSilence.AppendTo(SampleProvider);
                     return;
                 }
             }
@@ -163,17 +159,4 @@ class MciCaptureHelper : ICaptureHelper {
 
     [DllImport("winmm.dll", EntryPoint = "mciGetErrorStringW", CharSet = CharSet.Unicode)]
     static extern bool mciGetErrorString(uint errorCode, [Out] char[] returnBuf, int returnLen);
-
-    class EternalSilence : ISampleProvider {
-        public EternalSilence(WaveFormat format) {
-            WaveFormat = format;
-        }
-
-        public WaveFormat WaveFormat { get; private set; }
-
-        public int Read(float[] buffer, int offset, int count) {
-            Array.Fill(buffer, 0f);
-            return count;
-        }
-    }
 }
