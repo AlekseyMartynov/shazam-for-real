@@ -9,7 +9,7 @@ static class CaptureAndTag {
 
     public static async Task<ShazamResult> RunAsync(ICaptureHelper captureHelper, int initialDurationMs) {
         var analysis = new Analysis();
-        var finder = new LandmarkFinder(analysis);
+        var finder = new PeakFinder(analysis);
 
         var retryMs = initialDurationMs;
         var tagId = Guid.NewGuid().ToString();
@@ -22,14 +22,14 @@ static class CaptureAndTag {
 
             if(readChunkResult == ReadChunkResult.SampleProviderChanged) {
                 analysis = new Analysis();
-                finder = new LandmarkFinder(analysis);
+                finder = new PeakFinder(analysis);
                 continue;
             }
 
             analysis.AddChunk(CHUNK);
 
-            if(analysis.StripeCount > 2 * LandmarkFinder.RADIUS_TIME)
-                finder.Find(analysis.StripeCount - LandmarkFinder.RADIUS_TIME - 1);
+            if(analysis.StripeCount > 2 * PeakFinder.RADIUS_TIME)
+                finder.Find(analysis.StripeCount - PeakFinder.RADIUS_TIME - 1);
 
             if(analysis.ProcessedMs >= retryMs) {
                 //new Painter(analysis, finder).Paint("c:/temp/spectro.png");

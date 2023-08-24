@@ -7,7 +7,7 @@ using System.Linq;
 
 static class Sig {
 
-    public static byte[] Write(int sampleRate, int sampleCount, LandmarkFinder finder) {
+    public static byte[] Write(int sampleRate, int sampleCount, PeakFinder finder) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             writer.Write(0xCAFE2580); // Dialling "2580" on your phone and holding it up to the music, https://www.shazam.com/company
@@ -50,7 +50,7 @@ static class Sig {
 
     // Alternative (legacy?) format used in ShazamCore10.dll
     // Works with any sample rate
-    public static byte[] Write2(int sampleRate, int sampleCount, LandmarkFinder finder) {
+    public static byte[] Write2(int sampleRate, int sampleCount, PeakFinder finder) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             writer.Write(-1);
@@ -114,16 +114,16 @@ static class Sig {
         }
     }
 
-    static byte[][] GetBandData(LandmarkFinder finder) {
-        return finder.EnumerateBandedLandmarks().Select(GetBandData).ToArray();
+    static byte[][] GetBandData(PeakFinder finder) {
+        return finder.EnumerateBandedPeaks().Select(GetBandData).ToArray();
     }
 
-    static byte[] GetBandData(IEnumerable<LandmarkInfo> landmarks) {
+    static byte[] GetBandData(IEnumerable<PeakInfo> peaks) {
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             var stripeIndex = 0;
 
-            foreach(var p in landmarks) {
+            foreach(var p in peaks) {
 
                 if(p.StripeIndex - stripeIndex >= 100) {
                     stripeIndex = p.StripeIndex;

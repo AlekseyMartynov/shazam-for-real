@@ -6,9 +6,9 @@ using System.Runtime.Versioning;
 [SupportedOSPlatform("windows")]
 class Painter {
     readonly Analysis Analysis;
-    readonly LandmarkFinder Finder;
+    readonly PeakFinder Finder;
 
-    public Painter(Analysis analysis, LandmarkFinder finder) {
+    public Painter(Analysis analysis, PeakFinder finder) {
         Analysis = analysis;
         Finder = finder;
     }
@@ -31,10 +31,10 @@ class Painter {
 
             using(var g = Graphics.FromImage(bitmap)) {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                foreach(var l in Finder.EnumerateAllLandmarks()) {
-                    var radius = 8 * l.InterpolatedLogMagnitude / UInt16.MaxValue;
-                    var cx = l.StripeIndex;
-                    var cy = h - l.InterpolatedBin - 1;
+                foreach(var p in Finder.EnumerateAllPeaks()) {
+                    var radius = 8 * p.InterpolatedLogMagnitude / UInt16.MaxValue;
+                    var cx = p.StripeIndex;
+                    var cy = h - p.InterpolatedBin - 1;
                     g.FillEllipse(Brushes.Yellow, cx - radius, cy - radius, 2 * radius, 2 * radius);
                 }
             }

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-class LandmarkFinder {
+class PeakFinder {
     public const int
         RADIUS_TIME = 47,
         RADIUS_FREQ = 9;
 
-    // Landmarks per second in a band
+    // Peaks per second in a band
     const int RATE = 12;
 
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
@@ -21,13 +21,13 @@ class LandmarkFinder {
         LOG_MIN_MAGN_SQUARED = MathF.Log(MIN_MAGN_SQUARED);
 
     readonly Analysis Analysis;
-    readonly IReadOnlyList<List<LandmarkInfo>> Bands;
+    readonly IReadOnlyList<List<PeakInfo>> Bands;
 
-    public LandmarkFinder(Analysis analysis) {
+    public PeakFinder(Analysis analysis) {
         Analysis = analysis;
 
         Bands = Enumerable.Range(0, BAND_FREQS.Count - 1)
-            .Select(_ => new List<LandmarkInfo>())
+            .Select(_ => new List<PeakInfo>())
             .ToList();
     }
 
@@ -43,15 +43,15 @@ class LandmarkFinder {
             if(!IsPeak(stripe, bin, 3, RADIUS_FREQ))
                 continue;
 
-            AddLandmarkAt(stripe, bin);
+            AddPeakAt(stripe, bin);
         }
     }
 
-    public IEnumerable<IEnumerable<LandmarkInfo>> EnumerateBandedLandmarks() {
+    public IEnumerable<IEnumerable<PeakInfo>> EnumerateBandedPeaks() {
         return Bands;
     }
 
-    public IEnumerable<LandmarkInfo> EnumerateAllLandmarks() {
+    public IEnumerable<PeakInfo> EnumerateAllPeaks() {
         return Bands.SelectMany(i => i);
     }
 
@@ -69,7 +69,7 @@ class LandmarkFinder {
         return -1;
     }
 
-    LandmarkInfo CreateLandmarkAt(int stripe, int bin) {
+    PeakInfo CreatePeakAt(int stripe, int bin) {
         // Quadratic Interpolation of Spectral Peaks
         // https://stackoverflow.com/a/59140547
         // https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html
@@ -83,7 +83,7 @@ class LandmarkFinder {
         var gamma = GetLogMagnitude(stripe, bin + 1);
         var p = (alpha - gamma) / (alpha - 2 * beta + gamma) / 2;
 
-        return new LandmarkInfo(
+        return new PeakInfo(
             stripe,
             bin + p,
             beta - (alpha - gamma) * p / 4
@@ -107,28 +107,28 @@ class LandmarkFinder {
         return true;
     }
 
-    void AddLandmarkAt(int stripe, int bin) {
-        var newLandmark = CreateLandmarkAt(stripe, bin);
+    void AddPeakAt(int stripe, int bin) {
+        var newPeak = CreatePeakAt(stripe, bin);
 
-        var bandIndex = GetBandIndex(newLandmark.InterpolatedBin);
+        var bandIndex = GetBandIndex(newPeak.InterpolatedBin);
         if(bandIndex < 0)
             return;
 
-        var bandLandmarks = Bands[bandIndex];
+        var bandPeaks = Bands[bandIndex];
 
-        if(bandLandmarks.Any()) {
-            var capturedDuration = 1d / Analysis.CHUNKS_PER_SECOND * (stripe - bandLandmarks.First().StripeIndex);
+        if(bandPeaks.Any()) {
+            var capturedDuration = 1d / Analysis.CHUNKS_PER_SECOND * (stripe - bandPeaks.First().StripeIndex);
             var allowedCount = 1 + capturedDuration * RATE;
-            if(bandLandmarks.Count > allowedCount) {
-                var pruneIndex = bandLandmarks.FindLastIndex(l => l.InterpolatedLogMagnitude < newLandmark.InterpolatedLogMagnitude);
+            if(bandPeaks.Count > allowedCount) {
+                var pruneIndex = bandPeaks.FindLastIndex(l => l.InterpolatedLogMagnitude < newPeak.InterpolatedLogMagnitude);
                 if(pruneIndex < 0)
                     return;
 
-                bandLandmarks.RemoveAt(pruneIndex);
+                bandPeaks.RemoveAt(pruneIndex);
             }
         }
 
-        bandLandmarks.Add(newLandmark);
+        bandPeaks.Add(newPeak);
     }
 
 }
