@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using NAudio.Wave;
 
 static class Interactive {
 
@@ -59,11 +58,10 @@ static class Interactive {
     }
 
     static ICaptureHelper CreateCaptureHelper() {
-        var format = new WaveFormat(Analysis.SAMPLE_RATE, 16, 1);
 #if MCI_CAPTURE
-        return new MciCaptureHelper(format);
+        return new MciCaptureHelper();
 #else
-        return new WasapiCaptureHelper(format);
+        return new WasapiCaptureHelper();
 #endif
     }
 

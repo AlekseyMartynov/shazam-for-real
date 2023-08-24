@@ -14,7 +14,6 @@ class MciCaptureHelper : ICaptureHelper {
     static readonly TimeSpan GENERATION_STEP = TimeSpan.FromSeconds(4);
     static readonly string TEMP_FILE_PATH = Path.Combine(Path.GetTempPath(), "shazam-for-real-tmp.wav");
 
-    readonly WaveFormat Format;
     readonly bool[] GenerationRecording = new bool[GENERATION_COUNT];
     readonly IList<Stream> GenerationStreams = new List<Stream>();
 
@@ -22,9 +21,8 @@ class MciCaptureHelper : ICaptureHelper {
     Thread WorkerThread;
     bool StopRequested;
 
-    public MciCaptureHelper(WaveFormat format) {
-        Format = format;
-        SampleProvider = new RawSourceWaveStream(Stream.Null, format).ToSampleProvider();
+    public MciCaptureHelper() {
+        SampleProvider = new RawSourceWaveStream(Stream.Null, ICaptureHelper.WAVE_FORMAT).ToSampleProvider();
     }
 
     public void Dispose() {
@@ -53,13 +51,14 @@ class MciCaptureHelper : ICaptureHelper {
         lock(SYNC) {
             for(var i = 0; i < GENERATION_COUNT; i++) {
                 var alias = GetAlias(i);
+                var format = ICaptureHelper.WAVE_FORMAT;
                 MciSend("open new Type waveaudio Alias", alias);
                 MciSend("set", alias,
-                    "bitspersample", Format.BitsPerSample,
-                    "channels", Format.Channels,
-                    "samplespersec", Format.SampleRate,
-                    "bytespersec", Format.AverageBytesPerSecond,
-                    "alignment", Format.BlockAlign
+                    "bitspersample", format.BitsPerSample,
+                    "channels", format.Channels,
+                    "samplespersec", format.SampleRate,
+                    "bytespersec", format.AverageBytesPerSecond,
+                    "alignment", format.BlockAlign
                 );
             }
 
@@ -98,7 +97,7 @@ class MciCaptureHelper : ICaptureHelper {
                 if(allGenerationsStopped) {
                     SampleProvider = new ConcatenatingSampleProvider(new[] {
                         SampleProvider,
-                        new EternalSilence(Format)
+                        new EternalSilence(ICaptureHelper.WAVE_FORMAT)
                     });
                     return;
                 }

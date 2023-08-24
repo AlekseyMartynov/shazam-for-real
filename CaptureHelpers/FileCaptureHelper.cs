@@ -35,8 +35,8 @@ class FileCaptureHelper : ICaptureHelper {
         if(SampleProvider.WaveFormat.Channels > 1)
             SampleProvider = new StereoToMonoSampleProvider(SampleProvider);
 
-        if(SampleProvider.WaveFormat.SampleRate != 16000)
-            SampleProvider = new WdlResamplingSampleProvider(SampleProvider, 16000);
+        if(SampleProvider.WaveFormat.SampleRate != Analysis.SAMPLE_RATE)
+            SampleProvider = new WdlResamplingSampleProvider(SampleProvider, Analysis.SAMPLE_RATE);
     }
 
     WaveStream CreateWaveStream() {
