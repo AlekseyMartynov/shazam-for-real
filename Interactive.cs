@@ -35,7 +35,9 @@ static class Interactive {
                     if(result.Success) {
                         Console.CursorLeft = 0;
                         Console.WriteLine(result.Url);
-                        Process.Start("explorer", result.Url);
+                        if(OperatingSystem.IsWindows()) {
+                            Process.Start("explorer", result.Url);
+                        }
                     } else {
                         Console.WriteLine(":(");
                     }
@@ -58,6 +60,10 @@ static class Interactive {
     }
 
     static ICaptureHelper CreateCaptureHelper() {
+        if(!OperatingSystem.IsWindows()) {
+            return new SoxCaptureHelper();
+        }
+
 #if MCI_CAPTURE
         return new MciCaptureHelper();
 #else
