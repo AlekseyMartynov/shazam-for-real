@@ -25,6 +25,7 @@ class FileCaptureHelper : ICaptureHelper {
 
     public bool Live => false;
     public ISampleProvider SampleProvider { get; private set; }
+    public Exception Exception => null;
 
     public void Start() {
         WaveStream = CreateWaveStream();

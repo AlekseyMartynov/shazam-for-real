@@ -8,6 +8,7 @@ interface ICaptureHelper : IDisposable {
 
     bool Live { get; }
     ISampleProvider SampleProvider { get; }
+    Exception Exception { get; }
 
     void Start();
 }

@@ -41,10 +41,19 @@ class MciCaptureHelper : ICaptureHelper {
 
     public bool Live => true;
     public ISampleProvider SampleProvider { get; private set; }
+    public Exception Exception { get; private set; }
 
     public void Start() {
-        WorkerThread = new Thread(WorkerThreadProc);
+        WorkerThread = new Thread(WorkerThreadProc_Guarded);
         WorkerThread.Start();
+    }
+
+    void WorkerThreadProc_Guarded() {
+        try {
+            WorkerThreadProc();
+        } catch(Exception x) {
+            Exception = x;
+        }
     }
 
     void WorkerThreadProc() {

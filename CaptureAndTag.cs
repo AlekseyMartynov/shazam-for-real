@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,6 +54,9 @@ static class CaptureAndTag {
         var expectedCount = CHUNK.Length;
 
         while(true) {
+            if(captureHelper.Exception != null)
+                ExceptionDispatchInfo.Capture(captureHelper.Exception).Throw();
+
             if(captureHelper.SampleProvider != sampleProvider)
                 return ReadChunkResult.SampleProviderChanged;
 

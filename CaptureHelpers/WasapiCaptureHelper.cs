@@ -23,10 +23,15 @@ class WasapiCaptureHelper : ICaptureHelper {
 
     public bool Live => true;
     public ISampleProvider SampleProvider { get; private set; }
+    public Exception Exception { get; private set; }
 
     public void Start() {
         Capture.DataAvailable += (s, e) => {
             CaptureBuf.AddSamples(e.Buffer, 0, e.BytesRecorded);
+        };
+
+        Capture.RecordingStopped += (s, e) => {
+            Exception = e.Exception;
         };
 
         Capture.StartRecording();
