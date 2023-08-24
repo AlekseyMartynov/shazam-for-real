@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-class MciCaptureHelper : ICaptureHelper {
+partial class MciCaptureHelper : ICaptureHelper {
     static readonly object SYNC = new();
     static readonly int GENERATION_COUNT = 3;
     static readonly TimeSpan GENERATION_STEP = TimeSpan.FromSeconds(4);
@@ -154,9 +154,9 @@ class MciCaptureHelper : ICaptureHelper {
         return new String(buf);
     }
 
-    [DllImport("winmm.dll", EntryPoint = "mciSendStringW", CharSet = CharSet.Unicode)]
-    static extern uint mciSendString(string command, [Out] char[] returnBuf, int returnLen, IntPtr callbackHandle);
+    [LibraryImport("winmm", EntryPoint = "mciSendStringW", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial uint mciSendString(string command, [Out] char[] returnBuf, int returnLen, IntPtr callbackHandle);
 
-    [DllImport("winmm.dll", EntryPoint = "mciGetErrorStringW", CharSet = CharSet.Unicode)]
-    static extern bool mciGetErrorString(uint errorCode, [Out] char[] returnBuf, int returnLen);
+    [LibraryImport("winmm", EntryPoint = "mciGetErrorStringW", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial void mciGetErrorString(uint errorCode, [Out] char[] returnBuf, int returnLen);
 }
