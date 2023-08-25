@@ -1,0 +1,38 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+
+    strategy:
+      matrix:
+        include:
+        - { os: windows-latest, rid: win-x64 }
+        - { os: ubuntu-latest, rid: linux-x64 }
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7
+
+    - run: dotnet publish --sc -c Release -r ${{ matrix.rid }}
+
+    - run: ./bin/Release/net7/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }} .github/workflows/test.mp3 > test-out
+
+    - if: matrix.os == 'windows-latest'
+      run: findstr 11188983 test-out
+
+    - if: matrix.os != 'windows-latest'
+      run: grep 11188983 test-out
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.rid }}
+        path: ./bin/Release/*/*/native/*
+        retention-days: 1
