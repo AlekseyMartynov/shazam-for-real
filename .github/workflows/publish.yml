@@ -32,13 +32,13 @@ jobs:
 
     - run: dotnet publish --sc -c Release -r ${{ matrix.rid }}
 
-    - if: endsWith(matrix.rid, '-x64')
+    - if: endsWith(matrix.rid, '-x64') || matrix.rid == 'linux-arm64'
       run: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }} .github/workflows/test.mp3 > test-out
 
     - if: matrix.rid == 'win-x64'
       run: findstr 11188983 test-out
 
-    - if: matrix.rid == 'linux-x64' || matrix.rid == 'osx-x64'
+    - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64' || matrix.rid == 'osx-x64'
       run: grep 11188983 test-out
 
     - uses: actions/upload-artifact@v3

@@ -15,3 +15,5 @@ dpkg --add-architecture arm64
 
 apt-get update
 apt-get install -y llvm zlib1g-dev:arm64 binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu
+
+apt-get install qemu-user
