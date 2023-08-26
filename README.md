@@ -1,5 +1,13 @@
 ![Screenshot](Screenshot.png?raw=true)
 
+## Install
+
+- Download binary for your platform from [Releases](https://github.com/AlekseyMartynov/shazam-for-real/releases)
+
+- (Linux/Mac) Set executable bit `chmod +x Shazam`
+
+- (Linux/Mac) Install [SoX](https://en.wikipedia.org/wiki/SoX) via `sudo apt-get install sox` or `brew install sox`
+
 ## Usage
 
 - Interactive: run without arguments
