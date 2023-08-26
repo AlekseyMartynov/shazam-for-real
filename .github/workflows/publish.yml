@@ -14,6 +14,7 @@ jobs:
         - { os: windows-latest, rid: win-x64 }
         - { os: windows-latest, rid: win-arm64 }
         - { os: ubuntu-latest, rid: linux-x64 }
+        - { os: ubuntu-latest, rid: linux-arm64 }
         - { os: macos-latest, rid: osx-x64 }
         - { os: macos-latest, rid: osx-arm64 }
 
@@ -25,6 +26,9 @@ jobs:
     - uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8
+
+    - if: matrix.rid == 'linux-arm64'
+      run: sudo sh -e .github/workflows/install-ubuntu-arm64.sh
 
     - run: dotnet publish --sc -c Release -r ${{ matrix.rid }}
 
