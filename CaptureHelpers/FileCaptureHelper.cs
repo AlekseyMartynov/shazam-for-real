@@ -2,6 +2,7 @@
 using NAudio.Wave;
 using NLayer.NAudioSupport;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -38,6 +39,20 @@ class FileCaptureHelper : ICaptureHelper {
 
         if(SampleProvider.WaveFormat.SampleRate != Analysis.SAMPLE_RATE)
             SampleProvider = new WdlResamplingSampleProvider(SampleProvider, Analysis.SAMPLE_RATE);
+    }
+
+    public void SkipTo(TimeSpan time) {
+        var len = Analysis.SAMPLE_RATE / 2;
+        var buf = ArrayPool<float>.Shared.Rent(len);
+
+        try {
+            while(WaveStream.CurrentTime < time) {
+                if(SampleProvider.Read(buf, 0, len) < len)
+                    break;
+            }
+        } finally {
+            ArrayPool<float>.Shared.Return(buf);
+        }
     }
 
     WaveStream CreateWaveStream() {

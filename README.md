@@ -27,10 +27,9 @@
   > Shazam mix.mp3 05:00 till-end
 
   00:05:00 https://www.shazam.com/track/668835426/okhopa
-  00:05:12 https://www.shazam.com/track/668835426/okhopa
-  . . .
-  00:06:00 https://www.shazam.com/track/668835426/okhopa
-  00:06:12 https://www.shazam.com/track/667516878/in-surdose
-  00:06:24 https://www.shazam.com/track/667516878/in-surdose
+  00:05:30 https://www.shazam.com/track/668835426/okhopa
+  00:06:00 https://www.shazam.com/track/667516878/in-surdose
+  00:06:30 https://www.shazam.com/track/667516878/in-surdose
+  00:07:00 https://www.shazam.com/track/667516878/in-surdose
   . . .
   ```

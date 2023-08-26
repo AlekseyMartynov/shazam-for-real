@@ -27,6 +27,8 @@ static class FileTag {
         captureHelper.Start();
 
         while(true) {
+            captureHelper.SkipTo(startTime);
+
             Console.Write(captureHelper.CurrentTime.ToString(@"hh\:mm\:ss"));
             Console.Write(" ");
 
@@ -45,6 +47,8 @@ static class FileTag {
 
             if(!tillEnd)
                 break;
+
+            startTime += TimeSpan.FromSeconds(30);
         }
     }
 
