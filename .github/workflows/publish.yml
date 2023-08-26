@@ -12,8 +12,10 @@ jobs:
       matrix:
         include:
         - { os: windows-latest, rid: win-x64 }
+        - { os: windows-latest, rid: win-arm64 }
         - { os: ubuntu-latest, rid: linux-x64 }
         - { os: macos-latest, rid: osx-x64 }
+        - { os: macos-latest, rid: osx-arm64 }
 
     runs-on: ${{ matrix.os }}
 
@@ -26,12 +28,13 @@ jobs:
 
     - run: dotnet publish --sc -c Release -r ${{ matrix.rid }}
 
-    - run: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }} .github/workflows/test.mp3 > test-out
+    - if: endsWith(matrix.rid, '-x64')
+      run: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }} .github/workflows/test.mp3 > test-out
 
-    - if: matrix.os == 'windows-latest'
+    - if: matrix.rid == 'win-x64'
       run: findstr 11188983 test-out
 
-    - if: matrix.os != 'windows-latest'
+    - if: matrix.rid == 'linux-x64' || matrix.rid == 'osx-x64'
       run: grep 11188983 test-out
 
     - uses: actions/upload-artifact@v3
