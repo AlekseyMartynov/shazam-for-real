@@ -21,11 +21,11 @@ jobs:
 
     - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7
+        dotnet-version: 8
 
     - run: dotnet publish --sc -c Release -r ${{ matrix.rid }}
 
-    - run: ./bin/Release/net7/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }} .github/workflows/test.mp3 > test-out
+    - run: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }} .github/workflows/test.mp3 > test-out
 
     - if: matrix.os == 'windows-latest'
       run: findstr 11188983 test-out
