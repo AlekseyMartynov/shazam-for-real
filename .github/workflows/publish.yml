@@ -8,6 +8,7 @@ jobs:
   publish:
 
     strategy:
+      fail-fast: false
       matrix:
         include:
         - { os: windows-latest, rid: win-x64 }
