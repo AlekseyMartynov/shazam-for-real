@@ -20,7 +20,7 @@ class EternalSilence : ISampleProvider {
     public WaveFormat WaveFormat => ICaptureHelper.WAVE_FORMAT;
 
     public int Read(float[] buffer, int offset, int count) {
-        Array.Fill(buffer, 0f);
+        Array.Fill(buffer, 0f, offset, count);
         return count;
     }
 }
