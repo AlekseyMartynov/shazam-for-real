@@ -30,7 +30,7 @@ static class Interactive {
                     using var captureHelper = CreateCaptureHelper();
                     captureHelper.Start();
 
-                    var result = await CaptureAndTag.RunAsync(captureHelper, 3000);
+                    var result = await CaptureAndTag.RunAsync(captureHelper);
 
                     if(result.Success) {
                         Console.CursorLeft = 0;

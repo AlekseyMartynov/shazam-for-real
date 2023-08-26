@@ -30,7 +30,7 @@ static class FileTag {
             Console.Write(captureHelper.CurrentTime.ToString(@"hh\:mm\:ss"));
             Console.Write(" ");
 
-            var result = await CaptureAndTag.RunAsync(captureHelper, 12000);
+            var result = await CaptureAndTag.RunAsync(captureHelper);
 
             if(result == null) {
                 Console.WriteLine("END");

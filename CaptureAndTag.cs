@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 static class CaptureAndTag {
     static readonly float[] CHUNK = new float[Analysis.CHUNK_SIZE];
 
-    public static async Task<ShazamResult> RunAsync(ICaptureHelper captureHelper, int initialDurationMs) {
+    public static async Task<ShazamResult> RunAsync(ICaptureHelper captureHelper) {
         var analysis = new Analysis();
         var finder = new PeakFinder(analysis);
 
-        var retryMs = initialDurationMs;
+        var retryMs = 3000;
         var tagId = Guid.NewGuid().ToString();
 
         while(true) {
