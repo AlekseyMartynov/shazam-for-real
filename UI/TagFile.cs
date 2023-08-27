@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-static class FileTag {
+static class TagFile {
 
     public static async Task RunAsync(string[] args) {
         var filePath = args[0];
