@@ -53,9 +53,13 @@ static class TagLive {
     }
 
     static void ClearLine() {
-        Console.CursorLeft = 0;
-        Console.Write(new String(' ', Console.WindowWidth - 1));
-        Console.CursorLeft = 0;
+        if(Console.IsInputRedirected || Console.IsOutputRedirected) {
+            Console.WriteLine();
+        } else {
+            Console.CursorLeft = 0;
+            Console.Write(new String(' ', Console.WindowWidth - 1));
+            Console.CursorLeft = 0;
+        }
     }
 
     static void Navigate(string url) {
