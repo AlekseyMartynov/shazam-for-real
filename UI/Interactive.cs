@@ -26,7 +26,12 @@ static class Interactive {
 #endif
 
             if(key.Key == ConsoleKey.Spacebar) {
-                await TagLive.RunAsync();
+                await TagLive.RunAsync(false);
+                continue;
+            }
+
+            if(Char.ToLower(key.KeyChar) == 'a') {
+                await TagLive.RunAsync(true);
             }
         }
 
@@ -35,6 +40,7 @@ static class Interactive {
     static void PrintHotkeys() {
         Console.WriteLine(String.Join(", ",
             "SPACE - tag",
+            "A - auto",
 #if WASAPI_CAPTURE
             "S - source",
 #endif
