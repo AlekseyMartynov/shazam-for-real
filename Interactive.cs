@@ -8,7 +8,10 @@ static class Interactive {
 
     public static async Task RunAsync() {
         PrintHotkeys();
-        CaptureSourceHelper.Set(false);
+
+#if WASAPI_CAPTURE
+        WasapiLoopbackHelper.Set(false);
+#endif
 
         while(true) {
             var key = Console.ReadKey(true);
@@ -16,9 +19,9 @@ static class Interactive {
             if(Char.ToLower(key.KeyChar) == 'q')
                 break;
 
-#if !MCI_CAPTURE
+#if WASAPI_CAPTURE
             if(Char.ToLower(key.KeyChar) == 's') {
-                CaptureSourceHelper.Toggle();
+                WasapiLoopbackHelper.Toggle();
                 continue;
             }
 #endif
@@ -52,7 +55,7 @@ static class Interactive {
     static void PrintHotkeys() {
         Console.WriteLine(String.Join(", ",
             "SPACE - tag",
-#if !MCI_CAPTURE
+#if WASAPI_CAPTURE
             "S - source",
 #endif
             "Q - quit"
@@ -60,14 +63,14 @@ static class Interactive {
     }
 
     static ICaptureHelper CreateCaptureHelper() {
+#if WASAPI_CAPTURE
+        return new WasapiCaptureHelper();
+#else
         if(!OperatingSystem.IsWindows()) {
             return new SoxCaptureHelper();
         }
 
-#if MCI_CAPTURE
         return new MciCaptureHelper();
-#else
-        return new WasapiCaptureHelper();
 #endif
     }
 

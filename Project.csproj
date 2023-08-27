@@ -6,7 +6,7 @@
     <RootNamespace></RootNamespace>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <AssemblyName>Shazam</AssemblyName>
-    <DefineConstants>$(DefineConstants);MCI_CAPTURE</DefineConstants>
+    <DefineConstants>$(DefineConstants);NO_WASAPI_CAPTURE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 

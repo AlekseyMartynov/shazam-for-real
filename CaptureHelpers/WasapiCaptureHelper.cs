@@ -10,7 +10,7 @@ class WasapiCaptureHelper : ICaptureHelper {
     readonly MediaFoundationResampler Resampler;
 
     public WasapiCaptureHelper() {
-        Capture = CaptureSourceHelper.Loopback ? new WasapiLoopbackCapture() : new WasapiCapture();
+        Capture = WasapiLoopbackHelper.Loopback ? new WasapiLoopbackCapture() : new WasapiCapture();
         CaptureBuf = new BufferedWaveProvider(Capture.WaveFormat) { ReadFully = false };
         Resampler = new MediaFoundationResampler(CaptureBuf, ICaptureHelper.WAVE_FORMAT);
     }
