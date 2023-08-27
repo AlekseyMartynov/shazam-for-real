@@ -29,8 +29,8 @@ static class TagLive {
                     }
                     Console.WriteLine(text);
 
-                    if(!auto && OperatingSystem.IsWindows()) {
-                        Process.Start("explorer", result.Url);
+                    if(!auto) {
+                        Navigate(result.Url);
                     }
 
                     prevUrl = result.Url;
@@ -56,6 +56,13 @@ static class TagLive {
         Console.CursorLeft = 0;
         Console.Write(new String(' ', Console.WindowWidth - 1));
         Console.CursorLeft = 0;
+    }
+
+    static void Navigate(string url) {
+        if(OperatingSystem.IsWindows()) {
+            using var proc = Process.Start("explorer", url);
+            proc.WaitForExit();
+        }
     }
 
     static ICaptureHelper CreateCaptureHelper() {
