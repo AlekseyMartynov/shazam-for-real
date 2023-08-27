@@ -13,6 +13,8 @@ static class TagLive {
             ClearLine();
             Console.Write("Listening... ");
 
+            var startTime = DateTime.Now;
+
             try {
                 using var captureHelper = CreateCaptureHelper();
                 captureHelper.Start();
@@ -24,7 +26,7 @@ static class TagLive {
 
                     ClearLine();
                     if(auto) {
-                        Console.Write(DateTime.Now.ToString("HH:mm:ss"));
+                        Console.Write(startTime.ToString("HH:mm:ss"));
                         Console.Write(' ');
                     }
                     Console.WriteLine(text);
@@ -48,7 +50,9 @@ static class TagLive {
             ClearLine();
             Console.Write("Idle... ");
 
-            await Task.Delay(5000);
+            var nextStartTime = startTime + TimeSpan.FromSeconds(15);
+            while(DateTime.Now < nextStartTime)
+                await Task.Delay(100);
         }
     }
 
