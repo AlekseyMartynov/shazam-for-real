@@ -16,7 +16,7 @@ static class CaptureAndTag {
         var tagId = Guid.NewGuid().ToString();
 
         while(true) {
-            var readChunkResult = ReadChunk(captureHelper);
+            var readChunkResult = await ReadChunkAsync(captureHelper);
 
             if(readChunkResult == ReadChunkResult.EOF)
                 return null;
@@ -48,7 +48,7 @@ static class CaptureAndTag {
         }
     }
 
-    static ReadChunkResult ReadChunk(ICaptureHelper captureHelper) {
+    static async Task<ReadChunkResult> ReadChunkAsync(ICaptureHelper captureHelper) {
         var sampleProvider = captureHelper.SampleProvider;
         var offset = 0;
         var expectedCount = CHUNK.Length;
@@ -71,7 +71,7 @@ static class CaptureAndTag {
             offset += actualCount;
             expectedCount -= actualCount;
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
         }
     }
 
