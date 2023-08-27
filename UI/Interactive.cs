@@ -13,24 +13,24 @@ static class Interactive {
 #endif
 
         while(true) {
-            var key = Console.ReadKey(true);
+            var key = Char.ToLower(ReadKey());
 
-            if(Char.ToLower(key.KeyChar) == 'q')
+            if(key == 'q' || key == '\0')
                 break;
 
 #if WASAPI_CAPTURE
-            if(Char.ToLower(key.KeyChar) == 's') {
+            if(key == 's') {
                 WasapiLoopbackHelper.Toggle();
                 continue;
             }
 #endif
 
-            if(key.Key == ConsoleKey.Spacebar) {
+            if(key == ' ') {
                 await TagLive.RunAsync(false);
                 continue;
             }
 
-            if(Char.ToLower(key.KeyChar) == 'a') {
+            if(key == 'a') {
                 await TagLive.RunAsync(true);
             }
         }
@@ -48,4 +48,11 @@ static class Interactive {
         ));
     }
 
+    static char ReadKey() {
+        try {
+            return Console.ReadKey(true).KeyChar;
+        } catch(InvalidOperationException) {
+            return Console.In.ReadToEnd().FirstOrDefault();
+        }
+    }
 }
