@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8</TargetFramework>
+    <RuntimeIdentifiers>linux-arm64;linux-x64;osx-arm64;osx-x64;win-arm64;win-x64</RuntimeIdentifiers>
     <RootNamespace></RootNamespace>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <AssemblyName>Shazam</AssemblyName>
