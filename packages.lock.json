@@ -54,7 +54,7 @@
       "Microsoft.NETCore.Platforms": {
         "type": "Transitive",
         "resolved": "1.1.0",
-        "contentHash": "AFUBYT4hl8QgTvY+gDG/U/iEdbSYof7+Y95ZRN16gpvMRXdgAl/l48oN47vJQ94l+JnO38DAbnTcKzsiQyYhhw=="
+        "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
       },
       "Microsoft.Win32.SystemEvents": {
         "type": "Transitive",
@@ -64,7 +64,7 @@
       "NETStandard.Library": {
         "type": "Transitive",
         "resolved": "2.0.0",
-        "contentHash": "gz3hgc3tBDr3Ai9bPlsQ4Dw+vHbvDbEQ0u9w2xQUFpgY/hUJfyzJJ599OT6s7kQK8BnZMZtP9aTc1zKqLxNmpg==",
+        "contentHash": "7jnbRU+L08FXKMxqUflxEXtVymWvNOrS8yHgu9s6EM8Anr6T/wIX4nZ08j/u3Asz+tCufp3YVwFSEvFTPYmBPA==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
@@ -76,6 +76,48 @@
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
+      }
+    },
+    "net8.0/linux-arm64": {
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0-preview.7.23375.6",
+        "contentHash": "tYKg/5MecDn8SsIx/cqyjre2gEpbrgdritb0cF0lsbC+c4o+nPvWWPfGLoT5g3t1L0dtner8+8fxlx+VjrxINg=="
+      }
+    },
+    "net8.0/linux-x64": {
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0-preview.7.23375.6",
+        "contentHash": "tYKg/5MecDn8SsIx/cqyjre2gEpbrgdritb0cF0lsbC+c4o+nPvWWPfGLoT5g3t1L0dtner8+8fxlx+VjrxINg=="
+      }
+    },
+    "net8.0/osx-arm64": {
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0-preview.7.23375.6",
+        "contentHash": "tYKg/5MecDn8SsIx/cqyjre2gEpbrgdritb0cF0lsbC+c4o+nPvWWPfGLoT5g3t1L0dtner8+8fxlx+VjrxINg=="
+      }
+    },
+    "net8.0/osx-x64": {
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0-preview.7.23375.6",
+        "contentHash": "tYKg/5MecDn8SsIx/cqyjre2gEpbrgdritb0cF0lsbC+c4o+nPvWWPfGLoT5g3t1L0dtner8+8fxlx+VjrxINg=="
+      }
+    },
+    "net8.0/win-arm64": {
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0-preview.7.23375.6",
+        "contentHash": "tYKg/5MecDn8SsIx/cqyjre2gEpbrgdritb0cF0lsbC+c4o+nPvWWPfGLoT5g3t1L0dtner8+8fxlx+VjrxINg=="
+      }
+    },
+    "net8.0/win-x64": {
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0-preview.7.23375.6",
+        "contentHash": "tYKg/5MecDn8SsIx/cqyjre2gEpbrgdritb0cF0lsbC+c4o+nPvWWPfGLoT5g3t1L0dtner8+8fxlx+VjrxINg=="
       }
     }
   }
