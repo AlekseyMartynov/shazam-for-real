@@ -27,7 +27,7 @@ jobs:
       with:
         languages: csharp
 
-    - uses: github/codeql-action/autobuild@v2
+    - run: dotnet build
 
     - uses: github/codeql-action/analyze@v2
       with:
