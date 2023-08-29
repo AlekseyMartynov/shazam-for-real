@@ -13,9 +13,9 @@
       },
       "MathNet.Numerics": {
         "type": "Direct",
-        "requested": "[4.12.0, )",
-        "resolved": "4.12.0",
-        "contentHash": "U6R74mc1PHD3HbbevY5Z6AS07toye0PBooKPpCyD9sCc5HDPlRl+lmiWl+zy8L7IEHIH0Bvkx1sVqBY++5X5eA=="
+        "requested": "[4.15.0, )",
+        "resolved": "4.15.0",
+        "contentHash": "cP4QgPPiU7boMyL8npvuQyVGVYUd/JQY1AWa+Wl2f//fuJN40qwt9ABRazunZIcDLHg3SSlgD/e+3Lnp69jNTg=="
       },
       "NAudio.Core": {
         "type": "Direct",
