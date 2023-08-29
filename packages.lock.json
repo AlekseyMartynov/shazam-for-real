@@ -44,7 +44,7 @@
       },
       "System.Drawing.Common": {
         "type": "Direct",
-        "requested": "[8.0.0-*, )",
+        "requested": "[8.0.0-preview.7.23375.5, )",
         "resolved": "8.0.0-preview.7.23375.5",
         "contentHash": "IECr9UTQzBsP89YAez28/Jc+U/o1KTeBGk6VPDXrRNH6uo2POJKHhM1rweZIfakduU4M6FWIidEUNf34wbZMRQ==",
         "dependencies": {
