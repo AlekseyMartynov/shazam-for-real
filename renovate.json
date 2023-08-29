@@ -3,6 +3,7 @@
     "extends": [
         "config:base"
     ],
+    "prConcurrentLimit": 2,
     "semanticCommits": "enabled",
     "packageRules": [
         {
