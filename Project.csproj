@@ -8,6 +8,7 @@
     <AssemblyName>Shazam</AssemblyName>
     <DefineConstants>$(DefineConstants);NO_WASAPI_CAPTURE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">

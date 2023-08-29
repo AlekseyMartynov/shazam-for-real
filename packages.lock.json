@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0": {
+      "Crc32.NET": {
+        "type": "Direct",
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "wNW/huzolu8MNKUnwCVKxjfAlCFpeI8AZVfF46iAWJ1+P6bTU1AZct7VAkDDEjgeeTJCVTkGZaD6jSd/fOiUkA==",
+        "dependencies": {
+          "NETStandard.Library": "2.0.0"
+        }
+      },
+      "MathNet.Numerics": {
+        "type": "Direct",
+        "requested": "[4.12.0, )",
+        "resolved": "4.12.0",
+        "contentHash": "U6R74mc1PHD3HbbevY5Z6AS07toye0PBooKPpCyD9sCc5HDPlRl+lmiWl+zy8L7IEHIH0Bvkx1sVqBY++5X5eA=="
+      },
+      "NAudio.Core": {
+        "type": "Direct",
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "0iowfmolibU4KxjaC/s7lox/BeDg76UVvXtCuCzRiNpylVndqsxXxp+bVWFrpv0KzQDIKLxZrnDmYENlAI0u9g=="
+      },
+      "NAudio.Wasapi": {
+        "type": "Direct",
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "Zp/8l79aYQEu7/HfzXWVpqyIwRUPgsvCj/Qx+pR6ykJxvwjqOoUfMiEG9US1wW4d7PEzT5ZBIL+cp90t6HNNiw==",
+        "dependencies": {
+          "NAudio.Core": "2.1.0"
+        }
+      },
+      "NLayer.NAudioSupport": {
+        "type": "Direct",
+        "requested": "[1.3.0, )",
+        "resolved": "1.3.0",
+        "contentHash": "ydij015TE/8LjlibQSlFmOrmTYqXlr89oGDsuB8+H5Fxz/DMwVy9l6gHWZV4KT2bIhCJQ4sqGmL3ZOdbj3GMBA==",
+        "dependencies": {
+          "NAudio.Core": "2.0.0",
+          "NLayer": "1.14.0"
+        }
+      },
+      "System.Drawing.Common": {
+        "type": "Direct",
+        "requested": "[8.0.0-*, )",
+        "resolved": "8.0.0-preview.7.23375.5",
+        "contentHash": "IECr9UTQzBsP89YAez28/Jc+U/o1KTeBGk6VPDXrRNH6uo2POJKHhM1rweZIfakduU4M6FWIidEUNf34wbZMRQ==",
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0-preview.7.23375.6"
+        }
+      },
+      "Microsoft.NETCore.Platforms": {
+        "type": "Transitive",
+        "resolved": "1.1.0",
+        "contentHash": "AFUBYT4hl8QgTvY+gDG/U/iEdbSYof7+Y95ZRN16gpvMRXdgAl/l48oN47vJQ94l+JnO38DAbnTcKzsiQyYhhw=="
+      },
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0-preview.7.23375.6",
+        "contentHash": "tYKg/5MecDn8SsIx/cqyjre2gEpbrgdritb0cF0lsbC+c4o+nPvWWPfGLoT5g3t1L0dtner8+8fxlx+VjrxINg=="
+      },
+      "NETStandard.Library": {
+        "type": "Transitive",
+        "resolved": "2.0.0",
+        "contentHash": "gz3hgc3tBDr3Ai9bPlsQ4Dw+vHbvDbEQ0u9w2xQUFpgY/hUJfyzJJ599OT6s7kQK8BnZMZtP9aTc1zKqLxNmpg==",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      },
+      "NLayer": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "brv6M0Z+2zhOndFqGXaUa+r3/ihGrcp4NubRaaNxVRHFoFO+bUwSq3zxYotdBv/vVJrsiwH4wpzPevVz/PNkIw==",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1"
+        }
+      }
+    }
+  }
+}
