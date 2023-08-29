@@ -1,0 +1,34 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "master" ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8    
+
+    - uses: github/codeql-action/init@v2
+      with:
+        languages: csharp
+
+    - uses: github/codeql-action/autobuild@v2
+
+    - uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:csharp"
