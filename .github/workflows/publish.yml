@@ -51,6 +51,15 @@ jobs:
     - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64' || matrix.rid == 'osx-x64'
       run: grep 11188983 test-out
 
+    - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y alsa-base ffmpeg sox
+        ffmpeg -i .github/workflows/test.mp3 -ar 48000 -ac 2 /tmp/test.wav
+        cp .github/workflows/test-asoundrc ~/.asoundrc
+        echo ' ' | AUDIODEV=test ${{ env.OUT_BIN }} > test-out-live
+        grep 11188983 test-out-live
+
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.rid }}

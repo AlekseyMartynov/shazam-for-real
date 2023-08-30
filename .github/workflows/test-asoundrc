@@ -1,0 +1,10 @@
+pcm.test {
+    type file
+
+    slave {
+        pcm null
+    }
+
+    file /dev/null
+    infile /tmp/test.wav
+}
