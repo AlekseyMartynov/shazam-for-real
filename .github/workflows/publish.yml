@@ -27,6 +27,7 @@ jobs:
     env:
       OUT_DIR: ./bin/Release/net8/${{ matrix.rid }}/native
       OUT_BIN: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }}
+      TEST_TRACK_ID: 11188983
 
     runs-on: ${{ matrix.os }}
 
@@ -46,10 +47,10 @@ jobs:
       run: ${{ env.OUT_BIN }} .github/workflows/test.mp3 > test-out
 
     - if: matrix.rid == 'win-x64'
-      run: findstr 11188983 test-out
+      run: findstr ${{ env.TEST_TRACK_ID }} test-out
 
     - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64' || matrix.rid == 'osx-x64'
-      run: grep 11188983 test-out
+      run: grep ${{ env.TEST_TRACK_ID }} test-out
 
     - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64'
       run: |
@@ -58,7 +59,7 @@ jobs:
         ffmpeg -i .github/workflows/test.mp3 -ar 48000 -ac 2 /tmp/test.wav
         cp .github/workflows/test-asoundrc ~/.asoundrc
         echo ' ' | AUDIODEV=test ${{ env.OUT_BIN }} > test-out-live
-        grep 11188983 test-out-live
+        grep ${{ env.TEST_TRACK_ID }} test-out-live
 
     - uses: actions/upload-artifact@v3
       with:
