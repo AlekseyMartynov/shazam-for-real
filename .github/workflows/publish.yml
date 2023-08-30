@@ -24,6 +24,10 @@ jobs:
         - { os: macos-latest, rid: osx-x64 }
         - { os: macos-latest, rid: osx-arm64 }
 
+    env:
+      OUT_DIR: ./bin/Release/net8/${{ matrix.rid }}/native
+      OUT_BIN: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }}
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -39,7 +43,7 @@ jobs:
     - run: dotnet publish --sc -c Release -r ${{ matrix.rid }}
 
     - if: endsWith(matrix.rid, '-x64') || matrix.rid == 'linux-arm64'
-      run: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }} .github/workflows/test.mp3 > test-out
+      run: ${{ env.OUT_BIN }} .github/workflows/test.mp3 > test-out
 
     - if: matrix.rid == 'win-x64'
       run: findstr 11188983 test-out
@@ -50,5 +54,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.rid }}
-        path: ./bin/Release/*/*/native/*
+        path: ${{ env.OUT_DIR }}/*
         retention-days: 1
