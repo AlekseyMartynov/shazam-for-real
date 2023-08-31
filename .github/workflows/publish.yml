@@ -62,6 +62,16 @@ jobs:
         echo ' ' | AUDIODEV=test ${{ env.OUT_BIN }} > test-out-live
         grep ${{ env.TEST_TRACK_ID }} test-out-live
 
+    - if: matrix.rid == 'win-x64'
+      uses: AlekseyMartynov/action-vbcable-win@main
+
+    - if: matrix.rid == 'win-x64'
+      run: |
+        choco install fmedia
+        Start-Job -ScriptBlock { fmedia --repeat-all ${{ env.TEST_FILE }} }
+        " " | ${{ env.OUT_BIN }} > test-out-live
+        findstr ${{ env.TEST_TRACK_ID }} test-out-live
+
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.rid }}
