@@ -44,6 +44,8 @@ jobs:
 
     - run: dotnet publish --sc -c Release -r ${{ matrix.rid }}
 
+    # Test with file
+
     - if: endsWith(matrix.rid, '-x64') || matrix.rid == 'linux-arm64'
       run: ${{ env.OUT_BIN }} ${{ env.TEST_FILE }} > test-out
 
@@ -52,6 +54,8 @@ jobs:
 
     - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64' || matrix.rid == 'osx-x64'
       run: grep ${{ env.TEST_TRACK_ID }} test-out
+
+    # Test with virtual device (Linux)
 
     - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64'
       run: |
@@ -62,6 +66,8 @@ jobs:
         echo ' ' | AUDIODEV=test ${{ env.OUT_BIN }} > test-out-live
         grep ${{ env.TEST_TRACK_ID }} test-out-live
 
+    # Test with virtual device (Win)
+
     - if: matrix.rid == 'win-x64'
       uses: AlekseyMartynov/action-vbcable-win@main
 
@@ -71,6 +77,8 @@ jobs:
         Start-Job -ScriptBlock { fmedia --repeat-all ${{ env.TEST_FILE }} }
         " " | ${{ env.OUT_BIN }} > test-out-live
         findstr ${{ env.TEST_TRACK_ID }} test-out-live
+
+    # Ready
 
     - uses: actions/upload-artifact@v3
       with:
