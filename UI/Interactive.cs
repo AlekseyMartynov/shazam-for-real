@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 static class Interactive {
 
     public static async Task RunAsync() {
-        PrintHotkeys();
+        if(!ConsoleHelper.IsRedirected)
+            PrintHotkeys();
 
 #if WASAPI_CAPTURE
         WasapiLoopbackHelper.Set(false);

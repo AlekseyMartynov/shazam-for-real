@@ -10,8 +10,7 @@ static class TagLive {
         var prevUrl = default(string);
         
         while(true) {
-            ClearLine();
-            Console.Write("Listening... ");
+            ConsoleHelper.WriteProgress("Listening... ");
 
             var startTime = DateTime.Now;
 
@@ -24,14 +23,14 @@ static class TagLive {
                 if(result.Success) {
                     var text = result.Url != prevUrl ? result.Url : "...";
 
-                    ClearLine();
+                    ConsoleHelper.ClearProgress();
                     if(auto) {
                         Console.Write(startTime.ToString("HH:mm:ss"));
                         Console.Write(' ');
                     }
                     Console.WriteLine(text);
 
-                    if(!auto) {
+                    if(!ConsoleHelper.IsRedirected && !auto) {
                         Navigate(result.Url);
                     }
 
@@ -47,22 +46,11 @@ static class TagLive {
             if(!auto)
                 break;
 
-            ClearLine();
-            Console.Write("Idle... ");
+            ConsoleHelper.WriteProgress("Idle... ");
 
             var nextStartTime = startTime + TimeSpan.FromSeconds(15);
             while(DateTime.Now < nextStartTime)
                 await Task.Delay(100);
-        }
-    }
-
-    static void ClearLine() {
-        if(Console.IsInputRedirected || Console.IsOutputRedirected) {
-            Console.WriteLine();
-        } else {
-            Console.CursorLeft = 0;
-            Console.Write(new String(' ', Console.WindowWidth - 1));
-            Console.CursorLeft = 0;
         }
     }
 
