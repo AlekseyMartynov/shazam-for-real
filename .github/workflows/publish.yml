@@ -27,7 +27,7 @@ jobs:
     env:
       OUT_DIR: ./bin/Release/net8/${{ matrix.rid }}/native
       OUT_BIN: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }}
-      TEST_FILE: .github/workflows/test.mp3
+      TEST_FILE: TestData/test.mp3
       TEST_TRACK_ID: 11188983
 
     runs-on: ${{ matrix.os }}
