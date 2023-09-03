@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
+record PeakInfo(
+    int StripeIndex,
+    float InterpolatedBin,
+    float InterpolatedLogMagnitude
+);
+
 class PeakFinder {
     public const int
         RADIUS_TIME = 47,
