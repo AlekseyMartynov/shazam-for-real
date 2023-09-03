@@ -114,6 +114,65 @@ static class Sig {
         }
     }
 
+    public static void Read(byte[] data, out int sampleRate, out int sampleCount, out IReadOnlyList<PeakInfo> peaks) {
+        using var mem = new MemoryStream(data);
+        using var reader = new BinaryReader(mem);
+
+        if(reader.ReadUInt32() != 0xcafe2580)
+            throw new NotSupportedException();
+
+        mem.Position = 7 * 4;
+        sampleRate = SampleRateFromCode(reader.ReadInt32() >> 27);
+
+        mem.Position = 10 * 4;
+        sampleCount = reader.ReadInt32();
+
+        mem.Position = 14 * 4;
+
+        var writablePeaks = new List<PeakInfo>();
+
+        while(mem.Position < mem.Length) {
+            var id = reader.ReadInt32() - 0x60030040;
+            if(id < 0 || id > 3)
+                throw new InvalidOperationException();
+
+            var len = reader.ReadInt32();
+            var end = mem.Position + len;
+            var stripe = 0;
+
+            while(mem.Position < end) {
+                if(end - mem.Position >= 5) {
+                    var x = reader.ReadByte();
+                    if(x == 255) {
+                        stripe = reader.ReadInt32();
+                        x = reader.ReadByte();
+                    }
+                    stripe += x;
+
+                    var magn = reader.ReadUInt16();
+                    var bin = reader.ReadUInt16() / 64;
+
+                    if(bin == 0 || magn == 0)
+                        throw new InvalidOperationException();
+
+                    writablePeaks.Add(new PeakInfo(stripe, bin, magn));
+                } else {
+                    if(reader.ReadByte() != 0)
+                        throw new InvalidOperationException();
+                }
+            }
+
+            var pad = CalcPadLen((int)mem.Position);
+
+            while(pad > 0) {
+                reader.ReadByte();
+                pad--;
+            }
+        }
+
+        peaks = writablePeaks;
+    }
+
     static byte[][] GetBandData(PeakFinder finder) {
         return finder.EnumerateBandedPeaks().Select(GetBandData).ToArray();
     }
@@ -162,6 +221,15 @@ static class Sig {
             case 32000: return 4;
         }
         throw new NotSupportedException();
+    }
+
+    static int SampleRateFromCode(int code) {
+        return code switch {
+            1 => 8000,
+            3 => 16000,
+            4 => 32000,
+            _ => throw new NotSupportedException()
+        };
     }
 
 }
