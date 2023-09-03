@@ -28,9 +28,7 @@ static class CaptureAndTag {
             }
 
             analysis.AddChunk(CHUNK);
-
-            if(analysis.StripeCount > 2 * PeakFinder.RADIUS_TIME)
-                finder.Find(analysis.StripeCount - PeakFinder.RADIUS_TIME - 1);
+            finder.Find();
 
             if(analysis.ProcessedMs >= retryMs) {
                 //new Painter(analysis, finder).Paint("c:/temp/spectro.png");

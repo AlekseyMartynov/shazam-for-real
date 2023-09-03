@@ -31,7 +31,12 @@ class PeakFinder {
             .ToList();
     }
 
-    public void Find(int stripe) {
+    public void Find() {
+        if(Analysis.StripeCount > 2 * RADIUS_TIME)
+            Find(Analysis.StripeCount - RADIUS_TIME - 1);
+    }
+
+    void Find(int stripe) {
         for(var bin = MIN_BIN; bin < MAX_BIN; bin++) {
 
             if(Analysis.GetMagnitudeSquared(stripe, bin) < MIN_MAGN_SQUARED)
