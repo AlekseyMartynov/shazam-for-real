@@ -28,7 +28,6 @@ static class CaptureAndTag {
             }
 
             analysis.AddChunk(CHUNK);
-            finder.Find();
 
             if(analysis.ProcessedMs >= retryMs) {
                 //new Painter(analysis, finder).Paint("c:/temp/spectro.png");

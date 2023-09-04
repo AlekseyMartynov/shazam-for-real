@@ -30,6 +30,8 @@ class PeakFinder {
     readonly IReadOnlyList<List<PeakInfo>> Bands;
 
     public PeakFinder(Analysis analysis) {
+        analysis.SetStripeAddedCallback(Analysis_StripeAddedCallback);
+
         Analysis = analysis;
 
         Bands = Enumerable.Range(0, BAND_FREQS.Count - 1)
@@ -37,7 +39,7 @@ class PeakFinder {
             .ToList();
     }
 
-    public void Find() {
+    void Analysis_StripeAddedCallback() {
         if(Analysis.StripeCount > 2 * RADIUS_TIME)
             Find(Analysis.StripeCount - RADIUS_TIME - 1);
     }

@@ -85,7 +85,6 @@ namespace Project.Test {
                     break;
 
                 analysis.AddChunk(chunk);
-                finder.Find();
             }
 
             sampleCount = analysis.ProcessedSamples;

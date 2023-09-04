@@ -18,11 +18,20 @@ class Analysis {
 
     readonly Complex32[] FFTBuf = new Complex32[WINDOW_SIZE];
 
+    Action StripeAddedCallback;
+
     public int ProcessedSamples { get; private set; }
     public int ProcessedMs => ProcessedSamples * 1000 / SAMPLE_RATE;
     public int StripeCount => Stripes.Count;
 
     int WindowRingPos => ProcessedSamples % WINDOW_SIZE;
+
+    public void SetStripeAddedCallback(Action callback) {
+        if(StripeAddedCallback != null)
+            throw new InvalidOperationException();
+
+        StripeAddedCallback = callback;
+    }
 
     public void AddChunk(float[] chunk) {
         if(chunk.Length != CHUNK_SIZE)
@@ -54,6 +63,8 @@ class Analysis {
         }
 
         Stripes.Add(stripe);
+
+        StripeAddedCallback?.Invoke();
     }
 
     public float GetMagnitudeSquared(int stripe, int bin) {
