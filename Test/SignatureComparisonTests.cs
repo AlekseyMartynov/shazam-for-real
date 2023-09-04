@@ -34,9 +34,7 @@ namespace Project.Test {
                 out var refPeaks
             );
 
-            // TODO
-            // https://github.com/marin-m/SongRec/blob/0.3.2/src/fingerprinting/signature_format.rs#L128
-            Assert.Equal(0.24, Math.Round(1d * (refSampleCount - mySampleCount) / Analysis.SAMPLE_RATE, 2));
+            Assert.Equal(refSampleCount, mySampleCount);
 
             var anchorBin = 38;
             var myStripe = myPeaks.FindOne(anchorBin).StripeIndex;
@@ -79,22 +77,31 @@ namespace Project.Test {
             var sampleProvider = wave.ToSampleProvider();
 
             var chunk = new float[Analysis.CHUNK_SIZE];
+            var remainingSampleCount = 0;
 
             while(true) {
-                if(sampleProvider.Read(chunk, 0, chunk.Length) < chunk.Length)
+                var readCount = sampleProvider.Read(chunk, 0, chunk.Length);
+
+                if(readCount < chunk.Length) {
+                    remainingSampleCount = readCount;
                     break;
+                }
 
                 analysis.AddChunk(chunk);
             }
 
-            sampleCount = analysis.ProcessedSamples;
-            peaks = finder.EnumerateAllPeaks().ToList();
+            var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples + remainingSampleCount, finder);
+            LoadBinary(sigBytes, out sampleCount, out peaks);
         }
 
 
         static void LoadBinary(string path, out int sampleCount, out IReadOnlyList<PeakInfo> peaks) {
+            LoadBinary(File.ReadAllBytes(path), out sampleCount, out peaks);
+        }
+
+        static void LoadBinary(byte[] data, out int sampleCount, out IReadOnlyList<PeakInfo> peaks) {
             Sig.Read(
-                File.ReadAllBytes(path),
+                data,
                 out var sampleRate,
                 out sampleCount,
                 out peaks

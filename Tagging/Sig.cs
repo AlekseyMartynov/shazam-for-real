@@ -8,6 +8,9 @@ using System.Linq;
 static class Sig {
 
     public static byte[] Write(int sampleRate, int sampleCount, PeakFinder finder) {
+        // https://github.com/marin-m/SongRec/blob/0.3.2/src/fingerprinting/signature_format.rs#L238
+        var sampleCountPadding = sampleRate * 6 / 25;
+
         using(var mem = new MemoryStream())
         using(var writer = new BinaryWriter(mem)) {
             writer.Write(0xCAFE2580); // Dialling "2580" on your phone and holding it up to the music, https://www.shazam.com/company
@@ -20,7 +23,7 @@ static class Sig {
             writer.Write(GetSampleRateCode(sampleRate) << 27);
             writer.Write(0);
             writer.Write(0);
-            writer.Write(sampleCount);
+            writer.Write(sampleCount + sampleCountPadding);
             writer.Write(0x007C0000);
             writer.Write(0x40000000);
             writer.Write(-1);
