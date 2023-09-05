@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+namespace Project;
+
 class Analysis {
     public const int SAMPLE_RATE = 16000;
     public const int CHUNKS_PER_SECOND = 125;

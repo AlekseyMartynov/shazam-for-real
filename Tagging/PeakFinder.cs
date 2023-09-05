@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+namespace Project;
+
 record PeakInfo(
     int StripeIndex,
     float InterpolatedBin,

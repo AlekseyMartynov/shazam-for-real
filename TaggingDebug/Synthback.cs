@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+namespace Project;
+
 class Synthback {
     static readonly float[] Envelope = Array.ConvertAll(Window.Hann(2 * Analysis.CHUNK_SIZE), Convert.ToSingle);
 

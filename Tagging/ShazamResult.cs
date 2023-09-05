@@ -1,5 +1,7 @@
 ﻿using System;
 
+namespace Project;
+
 class ShazamResult {
     public bool Success;
     public string ID;

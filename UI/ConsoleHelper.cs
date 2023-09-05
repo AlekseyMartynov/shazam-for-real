@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+namespace Project;
+
 static class ConsoleHelper {
 
     static ConsoleHelper() {

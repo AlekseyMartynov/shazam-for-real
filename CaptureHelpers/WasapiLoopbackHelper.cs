@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+namespace Project;
+
 static class WasapiLoopbackHelper {
     public static bool Loopback { get; private set; }
 

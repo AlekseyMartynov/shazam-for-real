@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
+namespace Project;
+
 static class TagLive {
 
     public static async Task RunAsync(bool auto) {

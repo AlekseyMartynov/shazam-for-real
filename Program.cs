@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+namespace Project;
+
 class Program {
 
     static async Task Main(string[] args) {

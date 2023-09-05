@@ -5,6 +5,8 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Project;
+
 static class CaptureAndTag {
     static readonly float[] CHUNK = new float[Analysis.CHUNK_SIZE];
 

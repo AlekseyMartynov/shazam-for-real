@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.Versioning;
 
+namespace Project;
+
 [SupportedOSPlatform("windows")]
 class Painter {
     readonly Analysis Analysis;

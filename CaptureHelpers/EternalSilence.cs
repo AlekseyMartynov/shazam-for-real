@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+namespace Project;
+
 class EternalSilence : ISampleProvider {
     readonly static ISampleProvider INSTANCE = new EternalSilence();
 

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+namespace Project;
+
 class SoxCaptureHelper : ICaptureHelper {
     Process Sox;
     WaveStream WaveStream;

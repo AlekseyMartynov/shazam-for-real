@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+namespace Project;
+
 interface ICaptureHelper : IDisposable {
     static readonly WaveFormat WAVE_FORMAT = new(Analysis.SAMPLE_RATE, 16, 1);
 

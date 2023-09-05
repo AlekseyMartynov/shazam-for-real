@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
+namespace Project;
+
 class FileCaptureHelper : ICaptureHelper {
     readonly string FilePath;
     readonly TimeSpan StartTime;

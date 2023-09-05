@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
+namespace Project;
+
 static class ShazamApi {
     static readonly HttpClient HTTP = new HttpClient();
     static readonly string INSTALLATION_ID = Guid.NewGuid().ToString();

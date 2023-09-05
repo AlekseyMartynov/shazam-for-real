@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+namespace Project;
+
 partial class MciCaptureHelper : ICaptureHelper {
     static readonly object SYNC = new();
     static readonly int GENERATION_COUNT = 3;
