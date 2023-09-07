@@ -10,26 +10,18 @@ using Xunit;
 namespace Project.Test {
 
     public class SignatureComparisonTests {
-        static readonly string TEST_DATA_DIR;
-
-        static SignatureComparisonTests() {
-            TEST_DATA_DIR = Path.Combine(
-                Path.GetDirectoryName(typeof(SignatureComparisonTests).Assembly.Location),
-                "../../../TestData"
-            );
-        }
 
         [Fact]
         public void Ref_SigX_10_1_3() {
             CreateFromWaveFile(
-                Path.Combine(TEST_DATA_DIR, "test2.wav"),
+                Path.Combine(TestHelper.DATA_DIR, "test2.wav"),
                 out var mySampleCount,
                 out var myPeaks
             );
 
             LoadBinary(
                 // Generated using libsigx.so from Android app v13.45
-                Path.Combine(TEST_DATA_DIR, "test2-sigx-10.1.3.bin"),
+                Path.Combine(TestHelper.DATA_DIR, "test2-sigx-10.1.3.bin"),
                 out var refSampleCount,
                 out var refPeaks
             );
