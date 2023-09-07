@@ -199,7 +199,7 @@ static class Sig {
                     throw new InvalidOperationException();
 
                 writer.Write(Convert.ToByte(p.StripeIndex - stripeIndex));
-                writer.Write(Convert.ToUInt16(p.InterpolatedLogMagnitude));
+                writer.Write(Convert.ToUInt16(p.LogMagnitude));
                 writer.Write(Convert.ToUInt16(64 * p.InterpolatedBin));
 
                 stripeIndex = p.StripeIndex;

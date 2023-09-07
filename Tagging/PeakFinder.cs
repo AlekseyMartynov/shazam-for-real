@@ -7,7 +7,7 @@ namespace Project;
 record PeakInfo(
     int StripeIndex,
     float InterpolatedBin,
-    float InterpolatedLogMagnitude
+    float LogMagnitude
 );
 
 class PeakFinder {
@@ -101,7 +101,7 @@ class PeakFinder {
         return new PeakInfo(
             stripe,
             bin + p,
-            beta - (alpha - gamma) * p / 4
+            beta // - (alpha - gamma) * p / 4
         );
     }
 
@@ -135,7 +135,7 @@ class PeakFinder {
             var capturedDuration = 1d / Analysis.CHUNKS_PER_SECOND * (stripe - bandPeaks.First().StripeIndex);
             var allowedCount = 1 + capturedDuration * RATE;
             if(bandPeaks.Count > allowedCount) {
-                var pruneIndex = bandPeaks.FindLastIndex(l => l.InterpolatedLogMagnitude < newPeak.InterpolatedLogMagnitude);
+                var pruneIndex = bandPeaks.FindLastIndex(l => l.LogMagnitude < newPeak.LogMagnitude);
                 if(pruneIndex < 0)
                     return;
 

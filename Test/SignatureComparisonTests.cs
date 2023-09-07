@@ -57,16 +57,16 @@ namespace Project.Test {
 
                 hitCount++;
 
-                myMagnList.Add(myPeak.InterpolatedLogMagnitude);
-                refMagnList.Add(refPeak.InterpolatedLogMagnitude);
+                myMagnList.Add(myPeak.LogMagnitude);
+                refMagnList.Add(refPeak.LogMagnitude);
             }
 
             Assert.True(1d * hitCount / myPeaks.Count > 0.8);
 
             var (magnFitIntercept, magnFitSlope) = Fit.Line(myMagnList.ToArray(), refMagnList.ToArray());
 
-            Assert.True(Math.Abs(magnFitSlope - 1) < 0.01);
-            Assert.True(Math.Abs(magnFitIntercept) < 100);
+            Assert.True(Math.Abs(magnFitSlope - 1) < 0.001);
+            Assert.True(Math.Abs(magnFitIntercept) < 10);
         }
 
         static void CreateFromWaveFile(string path, out int sampleCount, out IReadOnlyList<PeakInfo> peaks) {

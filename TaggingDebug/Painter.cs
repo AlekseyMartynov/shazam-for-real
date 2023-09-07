@@ -34,7 +34,7 @@ class Painter {
             using(var g = Graphics.FromImage(bitmap)) {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
                 foreach(var p in Finder.EnumerateAllPeaks()) {
-                    var radius = 8 * p.InterpolatedLogMagnitude / UInt16.MaxValue;
+                    var radius = 8 * p.LogMagnitude / UInt16.MaxValue;
                     var cx = p.StripeIndex;
                     var cy = h - p.InterpolatedBin - 1;
                     g.FillEllipse(Brushes.Yellow, cx - radius, cy - radius, 2 * radius, 2 * radius);

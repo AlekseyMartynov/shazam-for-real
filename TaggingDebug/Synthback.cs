@@ -29,7 +29,7 @@ class Synthback {
 
             for(var t = startSample; t < endSample; t++)
                 wave[t] += MathF.Sin(2 * MathF.PI * Analysis.BinToFreq(p.InterpolatedBin) * t / Analysis.SAMPLE_RATE)
-                    * MathF.Exp(p.InterpolatedLogMagnitude / UInt16.MaxValue)
+                    * MathF.Exp(p.LogMagnitude / UInt16.MaxValue)
                     * Envelope[t - startSample];
         }
 
