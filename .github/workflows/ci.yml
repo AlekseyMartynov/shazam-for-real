@@ -17,8 +17,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - run: curl -L https://github.com/editorconfig-checker/editorconfig-checker/releases/download/2.7.1/ec-linux-amd64.tar.gz  | tar xzf - -C /opt
     - run: /opt/bin/ec-linux-amd64
+
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8
+
+    - run: dotnet format Project.csproj --verify-no-changes
 
   unit-test:
     runs-on: ubuntu-latest

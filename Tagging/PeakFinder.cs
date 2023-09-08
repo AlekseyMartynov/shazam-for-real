@@ -106,7 +106,7 @@ class PeakFinder {
     }
 
     float GetLogMagnitude(int stripe, int bin) {
-        return 18 * 1024  * (1 - MathF.Log(Analysis.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED);
+        return 18 * 1024 * (1 - MathF.Log(Analysis.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED);
     }
 
     bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {
