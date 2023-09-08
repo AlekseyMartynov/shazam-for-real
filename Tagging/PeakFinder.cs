@@ -12,7 +12,7 @@ record PeakInfo(
 
 class PeakFinder {
     public const int
-        RADIUS_TIME = 47,
+        RADIUS_TIME = 45,
         RADIUS_FREQ = 9;
 
     // Peaks per second in a band
