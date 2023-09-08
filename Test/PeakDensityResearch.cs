@@ -19,8 +19,10 @@ public class PeakDensityResearch {
 
     [Fact]
     public void Run() {
-        LoadPeakMap(out var peakRate);
-        Output.WriteLine($"Peak rate {peakRate:0.#} peak/sec");
+        LoadPeakMap(out var bandedPeakRates);
+
+        for(var i = 0; i < bandedPeakRates.Count; i++)
+            Output.WriteLine($"Band {i} peak rate {bandedPeakRates[i]:0.#} peak/sec");
 
         var noPeakBoundary = new Dictionary<int, int>();
 
@@ -68,18 +70,22 @@ public class PeakDensityResearch {
             Output.WriteLine($"{bin}\t{stripe}");
     }
 
-    void LoadPeakMap(out double rate) {
+    void LoadPeakMap(out IReadOnlyList<double> bandedRates) {
         var path = Path.Combine(TestHelper.DATA_DIR, "gabin-full-sigx-10.1.3.bin");
 
         Sig.Read(
             File.ReadAllBytes(path),
             out var sampleRate,
             out var sampleCount,
-            out var peaks
+            out var peaks,
+            out var bandedCount
         );
 
         var durationSeconds = 1d * sampleCount / sampleRate;
-        rate = peaks.Count / durationSeconds;
+
+        bandedRates = bandedCount
+            .Select(i => i / durationSeconds)
+            .ToList();
 
         foreach(var p in peaks) {
             var (stripe, bin) = (p.StripeIndex, Convert.ToInt32(p.InterpolatedBin));
