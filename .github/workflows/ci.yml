@@ -12,6 +12,14 @@ on:
 
 jobs:
 
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - run: curl -L https://github.com/editorconfig-checker/editorconfig-checker/releases/download/2.7.1/ec-linux-amd64.tar.gz  | tar xzf - -C /opt
+    - run: /opt/bin/ec-linux-amd64
+
   unit-test:
     runs-on: ubuntu-latest
 

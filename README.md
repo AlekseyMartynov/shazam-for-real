@@ -13,7 +13,7 @@
 ## Usage
 
 - Interactive: run without arguments
-  
+
 - <a name="tag-files">Tag `WAV` and `MP3` files</a>
   ```
   Shazam PATH [TIME] [till-end]

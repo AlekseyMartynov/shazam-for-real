@@ -10,7 +10,7 @@ static class TagLive {
 
     public static async Task RunAsync(bool auto) {
         var prevUrl = default(string);
-        
+
         while(true) {
             ConsoleHelper.WriteProgress("Listening... ");
 
