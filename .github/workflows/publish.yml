@@ -22,7 +22,7 @@ jobs:
       with:
         dotnet-version: 8
 
-    - run: dotnet test
+    - run: dotnet test --logger "console;verbosity=detailed"
 
 
   publish:
