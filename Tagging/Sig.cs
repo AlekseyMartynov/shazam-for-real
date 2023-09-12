@@ -136,9 +136,17 @@ static class Sig {
             writableBands[i] = new();
 
         while(mem.Position < mem.Length) {
-            var bandIndex = reader.ReadInt32() - 0x60030040;
-            if(bandIndex < 0 || bandIndex > 3)
-                throw new InvalidOperationException();
+            var fat = false;
+            var bandIndex = 0;
+            var header = reader.ReadInt32();
+
+            if(header == 0x60023e80) {
+                fat = true;
+            } else {
+                bandIndex = header - 0x60030040;
+                if(bandIndex < 0 || bandIndex > 3)
+                    throw new InvalidOperationException();
+            }
 
             var len = reader.ReadInt32();
             var end = mem.Position + len;
@@ -146,15 +154,27 @@ static class Sig {
 
             while(mem.Position < end) {
                 if(end - mem.Position >= 5) {
-                    var x = reader.ReadByte();
-                    if(x == 255) {
+                    if(fat) {
                         stripe = reader.ReadInt32();
-                        x = reader.ReadByte();
+                    } else {
+                        var x = reader.ReadByte();
+                        if(x == 255) {
+                            stripe = reader.ReadInt32();
+                            x = reader.ReadByte();
+                        }
+                        stripe += x;
                     }
-                    stripe += x;
 
-                    var magn = reader.ReadUInt16();
-                    var bin = reader.ReadUInt16() / 64;
+                    var word1 = reader.ReadUInt16();
+                    var word2 = reader.ReadUInt16();
+
+                    if(fat) {
+                        mem.Position += 4;
+                        (word1, word2) = (word2, word1);
+                    }
+
+                    var magn = word1;
+                    var bin = word2 / 64;
 
                     if(bin == 0 || magn == 0)
                         throw new InvalidOperationException();
@@ -228,6 +248,7 @@ static class Sig {
     }
 
     static int SampleRateFromCode(int code) {
+        code &= 0xf;
         return code switch {
             1 => 8000,
             3 => 16000,

@@ -18,8 +18,22 @@ public class PeakDensityResearch {
     }
 
     [Fact]
-    public void Run() {
-        LoadPeakMap(out var bandedPeakRates);
+    public void Normal() {
+        Run("gabin-full-sigx-10.1.3.bin");
+    }
+
+    [Fact]
+    public void Fat() {
+        // Generated using libsigx.so from Android app v7.11
+        // SigType.SINGLE_FILE, SigOptions.FAT
+        // 'Fat' signature, presumably, contains raw peaks
+        // - before bin interpolation
+        // - before rate limit
+        Run("gabin-60s-sigx-5.1.0-fat.bin");
+    }
+
+    void Run(string fileName) {
+        LoadPeakMap(fileName, out var bandedPeakRates);
 
         for(var i = 0; i < bandedPeakRates.Count; i++)
             Output.WriteLine($"Band {i} peak rate {bandedPeakRates[i]:0.#} peak/sec");
@@ -70,8 +84,8 @@ public class PeakDensityResearch {
             Output.WriteLine($"{bin}\t{stripe}");
     }
 
-    void LoadPeakMap(out IReadOnlyList<double> bandedRates) {
-        var path = Path.Combine(TestHelper.DATA_DIR, "gabin-full-sigx-10.1.3.bin");
+    void LoadPeakMap(string fileName, out IReadOnlyList<double> bandedRates) {
+        var path = Path.Combine(TestHelper.DATA_DIR, fileName);
 
         Sig.Read(
             File.ReadAllBytes(path),
