@@ -6,23 +6,14 @@ using System.Linq;
 
 namespace Project;
 
-class EternalSilence : ISampleProvider {
-    readonly static ISampleProvider INSTANCE = new EternalSilence();
+static class EternalSilence {
+    readonly static ISampleProvider SILENCE = new SilenceProvider(ICaptureHelper.WAVE_FORMAT).ToSampleProvider();
 
     public static ISampleProvider AppendTo(ISampleProvider provider) {
         if(provider == null)
-            return INSTANCE;
+            return SILENCE;
 
-        return new ConcatenatingSampleProvider(new[] { provider, INSTANCE });
+        return new ConcatenatingSampleProvider(new[] { provider, SILENCE });
     }
 
-    private EternalSilence() {
-    }
-
-    public WaveFormat WaveFormat => ICaptureHelper.WAVE_FORMAT;
-
-    public int Read(float[] buffer, int offset, int count) {
-        Array.Fill(buffer, 0f, offset, count);
-        return count;
-    }
 }
