@@ -29,7 +29,7 @@ namespace Project.Test {
             );
 
             // Official signature has more peaks
-            // Most of them are at edges < DIST_TIME
+            // Most of them are at edges < H_STRIPE_DIST
 
             // Possible explanation for padding in official signature
             // start - first chunk completes the FFT window so it is immediately ready for analysis
@@ -63,7 +63,7 @@ namespace Project.Test {
                 refMagnList.Add(refPeak.LogMagnitude);
             }
 
-            Assert.True(1d * hitCount / myPeaks.Count > 0.75); // TODO
+            Assert.True(1d * hitCount / myPeaks.Count > 0.9);
 
             var (magnFitIntercept, magnFitSlope) = Fit.Line(myMagnList.ToArray(), refMagnList.ToArray());
 

@@ -12,8 +12,9 @@ record PeakInfo(
 
 class PeakFinder {
     public const int
-        DIST_TIME = 45,
-        DIST_FREQ = 9;
+        // Refer to Tests/PeakDensityResearch.Fat()
+        H_STRIPE_DIST = 45, H_BIN_DIST = 1,
+        V_STRIPE_DIST = 3, V_BIN_DIST = 10;
 
     // Peaks per second in a band
     const int RATE = 12;
@@ -21,8 +22,8 @@ class PeakFinder {
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
     static readonly int
-        MIN_BIN = Math.Max(Analysis.FreqToBin(BAND_FREQS.Min()), DIST_FREQ),
-        MAX_BIN = Math.Min(Analysis.FreqToBin(BAND_FREQS.Max()), Analysis.BIN_COUNT - DIST_FREQ);
+        MIN_BIN = Math.Max(Analysis.FreqToBin(BAND_FREQS.Min()), V_BIN_DIST),
+        MAX_BIN = Math.Min(Analysis.FreqToBin(BAND_FREQS.Max()), Analysis.BIN_COUNT - V_BIN_DIST);
 
     static readonly float
         MIN_MAGN_SQUARED = 1f / 512 / 512,
@@ -42,8 +43,8 @@ class PeakFinder {
     }
 
     void Analysis_StripeAddedCallback() {
-        if(Analysis.StripeCount > 2 * DIST_TIME)
-            Find(Analysis.StripeCount - DIST_TIME - 1);
+        if(Analysis.StripeCount > 2 * H_STRIPE_DIST)
+            Find(Analysis.StripeCount - H_STRIPE_DIST - 1);
     }
 
     void Find(int stripe) {
@@ -52,10 +53,10 @@ class PeakFinder {
             if(Analysis.GetMagnitudeSquared(stripe, bin) < MIN_MAGN_SQUARED)
                 continue;
 
-            if(!IsPeak(stripe, bin, DIST_TIME, 0))
+            if(!IsPeak(stripe, bin, H_STRIPE_DIST, H_BIN_DIST))
                 continue;
 
-            if(!IsPeak(stripe, bin, 3, DIST_FREQ))
+            if(!IsPeak(stripe, bin, V_STRIPE_DIST, V_BIN_DIST))
                 continue;
 
             AddPeakAt(stripe, bin);
@@ -135,10 +136,15 @@ class PeakFinder {
             var capturedDuration = 1d / Analysis.CHUNKS_PER_SECOND * (stripe - bandPeaks.First().StripeIndex);
             var allowedCount = 1 + capturedDuration * RATE;
             if(bandPeaks.Count > allowedCount) {
+#if FALSE
                 var pruneIndex = bandPeaks.FindLastIndex(l => l.LogMagnitude < newPeak.LogMagnitude);
                 if(pruneIndex < 0)
                     return;
-
+#else
+                var pruneIndex = IndexOfMinLogMagnitude(bandPeaks);
+                if(newPeak.LogMagnitude <= bandPeaks[pruneIndex].LogMagnitude)
+                    return;
+#endif
                 bandPeaks.RemoveAt(pruneIndex);
             }
         }
@@ -146,4 +152,21 @@ class PeakFinder {
         bandPeaks.Add(newPeak);
     }
 
+    static int IndexOfMinLogMagnitude(IEnumerable<PeakInfo> peaks) {
+        var minLogMagnitude = -1f;
+        var minIndex = -1;
+
+        var currIndex = 0;
+
+        foreach(var p in peaks) {
+            var currLogMagnitude = p.LogMagnitude;
+            if(minIndex < 0 || currLogMagnitude < minLogMagnitude) {
+                minLogMagnitude = currLogMagnitude;
+                minIndex = currIndex;
+            }
+            currIndex++;
+        }
+
+        return minIndex;
+    }
 }
