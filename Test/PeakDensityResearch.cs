@@ -77,17 +77,16 @@ public class PeakDensityResearch {
             File.ReadAllBytes(path),
             out var sampleRate,
             out var sampleCount,
-            out var peaks,
-            out var bandedCount
+            out var bands
         );
 
         var durationSeconds = 1d * sampleCount / sampleRate;
 
-        bandedRates = bandedCount
-            .Select(i => i / durationSeconds)
+        bandedRates = bands
+            .Select(i => i.Count / durationSeconds)
             .ToList();
 
-        foreach(var p in peaks) {
+        foreach(var p in bands.SelectMany(i => i)) {
             var (stripe, bin) = (p.StripeIndex, Convert.ToInt32(p.InterpolatedBin));
             PeakMap.Add((stripe, bin));
         }

@@ -8,6 +8,7 @@ using System.Linq;
 using Xunit;
 
 namespace Project.Test {
+    using Bands = IReadOnlyList<IReadOnlyList<PeakInfo>>;
 
     public class SignatureComparisonTests {
 
@@ -17,14 +18,14 @@ namespace Project.Test {
                 Path.Combine(TestHelper.DATA_DIR, "test2.wav"),
                 out var mySampleCount,
                 out var myRemainingSampleCount,
-                out var myPeaks
+                out var myBands
             );
 
             LoadBinary(
                 // Generated using libsigx.so from Android app v13.45
                 Path.Combine(TestHelper.DATA_DIR, "test2-sigx-10.1.3.bin"),
                 out var refSampleCount,
-                out var refPeaks
+                out var refBands
             );
 
             // Official signature has more peaks
@@ -44,6 +45,9 @@ namespace Project.Test {
 
             var myMagnList = new List<double>();
             var refMagnList = new List<double>();
+
+            var myPeaks = myBands.SelectMany(i => i).ToList();
+            var refPeaks = refBands.SelectMany(i => i).ToList();
 
             foreach(var myPeak in myPeaks) {
                 var refPeak = refPeaks.FindOne(myPeak.StripeIndex + refStripeOffset, myPeak.InterpolatedBin);
@@ -67,7 +71,7 @@ namespace Project.Test {
             Assert.True(Math.Abs(magnFitIntercept) < 10);
         }
 
-        static void CreateFromWaveFile(string path, out int sampleCount, out int remainingSampleCount, out IReadOnlyList<PeakInfo> peaks) {
+        static void CreateFromWaveFile(string path, out int sampleCount, out int remainingSampleCount, out Bands bands) {
             var analysis = new Analysis();
             var finder = new PeakFinder(analysis);
 
@@ -88,20 +92,20 @@ namespace Project.Test {
             }
 
             var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples, finder);
-            LoadBinary(sigBytes, out sampleCount, out peaks);
+            LoadBinary(sigBytes, out sampleCount, out bands);
         }
 
 
-        static void LoadBinary(string path, out int sampleCount, out IReadOnlyList<PeakInfo> peaks) {
-            LoadBinary(File.ReadAllBytes(path), out sampleCount, out peaks);
+        static void LoadBinary(string path, out int sampleCount, out Bands bands) {
+            LoadBinary(File.ReadAllBytes(path), out sampleCount, out bands);
         }
 
-        static void LoadBinary(byte[] data, out int sampleCount, out IReadOnlyList<PeakInfo> peaks) {
+        static void LoadBinary(byte[] data, out int sampleCount, out Bands bands) {
             Sig.Read(
                 data,
                 out var sampleRate,
                 out sampleCount,
-                out peaks
+                out bands
             );
 
             Assert.Equal(Analysis.SAMPLE_RATE, sampleRate);

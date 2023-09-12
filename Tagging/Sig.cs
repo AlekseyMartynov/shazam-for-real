@@ -116,11 +116,7 @@ static class Sig {
         }
     }
 
-    public static void Read(byte[] data, out int sampleRate, out int sampleCount, out IReadOnlyList<PeakInfo> peaks) {
-        Read(data, out sampleRate, out sampleCount, out peaks, out _);
-    }
-
-    public static void Read(byte[] data, out int sampleRate, out int sampleCount, out IReadOnlyList<PeakInfo> peaks, out IReadOnlyList<int> bandedCount) {
+    public static void Read(byte[] data, out int sampleRate, out int sampleCount, out IReadOnlyList<IReadOnlyList<PeakInfo>> bands) {
         using var mem = new MemoryStream(data);
         using var reader = new BinaryReader(mem);
 
@@ -135,8 +131,9 @@ static class Sig {
 
         mem.Position = 14 * 4;
 
-        var writablePeaks = new List<PeakInfo>();
-        var writableBandedCount = new int[4];
+        var writableBands = new List<PeakInfo>[4];
+        for(var i = 0; i < 4; i++)
+            writableBands[i] = new();
 
         while(mem.Position < mem.Length) {
             var bandIndex = reader.ReadInt32() - 0x60030040;
@@ -162,8 +159,7 @@ static class Sig {
                     if(bin == 0 || magn == 0)
                         throw new InvalidOperationException();
 
-                    writablePeaks.Add(new PeakInfo(stripe, bin, magn));
-                    writableBandedCount[bandIndex]++;
+                    writableBands[bandIndex].Add(new PeakInfo(stripe, bin, magn));
                 } else {
                     if(reader.ReadByte() != 0)
                         throw new InvalidOperationException();
@@ -178,8 +174,7 @@ static class Sig {
             }
         }
 
-        peaks = writablePeaks;
-        bandedCount = writableBandedCount;
+        bands = writableBands;
     }
 
     static byte[][] GetBandData(PeakFinder finder) {
