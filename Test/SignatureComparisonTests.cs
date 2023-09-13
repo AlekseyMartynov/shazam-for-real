@@ -29,7 +29,7 @@ namespace Project.Test {
             );
 
             // Official signature has more peaks
-            // Most of them are at edges < RADIUS_TIME
+            // Most of them are at edges < STRIPE_DIST
 
             // Possible explanation for padding in official signature
             // start - first chunk completes the FFT window so it is immediately ready for analysis

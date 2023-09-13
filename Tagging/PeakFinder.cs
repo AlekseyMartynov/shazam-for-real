@@ -12,8 +12,8 @@ record PeakInfo(
 
 class PeakFinder {
     public const int
-        RADIUS_TIME = 45,
-        RADIUS_FREQ = 9;
+        STRIPE_DIST = 45,
+        BIN_DIST = 9;
 
     // Peaks per second in a band
     const int RATE = 12;
@@ -21,8 +21,8 @@ class PeakFinder {
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
     static readonly int
-        MIN_BIN = Math.Max(Analysis.FreqToBin(BAND_FREQS.Min()), RADIUS_FREQ),
-        MAX_BIN = Math.Min(Analysis.FreqToBin(BAND_FREQS.Max()), Analysis.BIN_COUNT - RADIUS_FREQ);
+        MIN_BIN = Math.Max(Analysis.FreqToBin(BAND_FREQS.Min()), BIN_DIST),
+        MAX_BIN = Math.Min(Analysis.FreqToBin(BAND_FREQS.Max()), Analysis.BIN_COUNT - BIN_DIST);
 
     static readonly float
         MIN_MAGN_SQUARED = 1f / 512 / 512,
@@ -42,8 +42,8 @@ class PeakFinder {
     }
 
     void Analysis_StripeAddedCallback() {
-        if(Analysis.StripeCount > 2 * RADIUS_TIME)
-            Find(Analysis.StripeCount - RADIUS_TIME - 1);
+        if(Analysis.StripeCount > 2 * STRIPE_DIST)
+            Find(Analysis.StripeCount - STRIPE_DIST - 1);
     }
 
     void Find(int stripe) {
@@ -52,10 +52,10 @@ class PeakFinder {
             if(Analysis.GetMagnitudeSquared(stripe, bin) < MIN_MAGN_SQUARED)
                 continue;
 
-            if(!IsPeak(stripe, bin, RADIUS_TIME, 0))
+            if(!IsPeak(stripe, bin, STRIPE_DIST, 0))
                 continue;
 
-            if(!IsPeak(stripe, bin, 3, RADIUS_FREQ))
+            if(!IsPeak(stripe, bin, 3, BIN_DIST))
                 continue;
 
             AddPeakAt(stripe, bin);
@@ -109,10 +109,10 @@ class PeakFinder {
         return 18 * 1024 * (1 - MathF.Log(Analysis.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED);
     }
 
-    bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {
+    bool IsPeak(int stripe, int bin, int stripeDist, int binDist) {
         var center = Analysis.GetMagnitudeSquared(stripe, bin);
-        for(var s = -stripeRadius; s <= stripeRadius; s++) {
-            for(var b = -binRadius; b <= binRadius; b++) {
+        for(var s = -stripeDist; s <= stripeDist; s++) {
+            for(var b = -binDist; b <= binDist; b++) {
                 if(s == 0 && b == 0)
                     continue;
                 if(Analysis.GetMagnitudeSquared(stripe + s, bin + b) >= center)
