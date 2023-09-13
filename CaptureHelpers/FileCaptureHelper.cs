@@ -60,10 +60,18 @@ class FileCaptureHelper : ICaptureHelper {
     WaveStream CreateWaveStream() {
         var ext = Path.GetExtension(FilePath).ToLower();
         return ext switch {
-            ".mp3" => new Mp3FileReaderBase(FilePath, fmt => new Mp3FrameDecompressor(fmt)),
+            ".mp3" => new Mp3FileReaderBase(FilePath, CreateMp3FrameDecompressor),
             ".wav" => new WaveFileReader(FilePath),
             _ => throw new NotSupportedException($"Extension '{ext}' not supported"),
         };
     }
 
+    static IMp3FrameDecompressor CreateMp3FrameDecompressor(WaveFormat mp3Format) {
+        var sr = mp3Format.SampleRate;
+
+        if(sr > 12000 && sr < 32000)
+            throw new Exception($"{sr} Hz mp3 decoder is broken, https://github.com/naudio/NLayer/issues/19");
+
+        return new Mp3FrameDecompressor(mp3Format);
+    }
 }
