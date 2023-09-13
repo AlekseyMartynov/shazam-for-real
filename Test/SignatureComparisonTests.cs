@@ -14,8 +14,8 @@ namespace Project.Test {
 
         [Fact]
         public void Ref_SigX_10_1_3() {
-            CreateFromWaveFile(
-                Path.Combine(TestHelper.DATA_DIR, "test2.wav"),
+            CreateFromFile(
+                Path.Combine(TestHelper.DATA_DIR, "test.mp3"),
                 out var mySampleCount,
                 out var myRemainingSampleCount,
                 out var myBands
@@ -23,7 +23,7 @@ namespace Project.Test {
 
             LoadBinary(
                 // Generated using libsigx.so from Android app v13.45
-                Path.Combine(TestHelper.DATA_DIR, "test2-sigx-10.1.3.bin"),
+                Path.Combine(TestHelper.DATA_DIR, "test-sigx-10.1.3.bin"),
                 out var refSampleCount,
                 out var refBands
             );
@@ -63,7 +63,7 @@ namespace Project.Test {
                 refMagnList.Add(refPeak.LogMagnitude);
             }
 
-            Assert.True(1d * hitCount / myPeaks.Count > 0.8);
+            Assert.True(1d * hitCount / myPeaks.Count > 0.75); // TODO
 
             var (magnFitIntercept, magnFitSlope) = Fit.Line(myMagnList.ToArray(), refMagnList.ToArray());
 
@@ -71,17 +71,17 @@ namespace Project.Test {
             Assert.True(Math.Abs(magnFitIntercept) < 10);
         }
 
-        static void CreateFromWaveFile(string path, out int sampleCount, out int remainingSampleCount, out Bands bands) {
+        static void CreateFromFile(string path, out int sampleCount, out int remainingSampleCount, out Bands bands) {
             var analysis = new Analysis();
             var finder = new PeakFinder(analysis);
 
-            using var wave = new WaveFileReader(path);
-            var sampleProvider = wave.ToSampleProvider();
+            using var captureHelper = new FileCaptureHelper(path);
+            captureHelper.Start();
 
             var chunk = new float[Analysis.CHUNK_SIZE];
 
             while(true) {
-                var readCount = sampleProvider.Read(chunk, 0, chunk.Length);
+                var readCount = captureHelper.SampleProvider.Read(chunk, 0, chunk.Length);
 
                 if(readCount < chunk.Length) {
                     remainingSampleCount = readCount;

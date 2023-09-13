@@ -15,7 +15,7 @@ class FileCaptureHelper : ICaptureHelper {
 
     WaveStream WaveStream;
 
-    public FileCaptureHelper(string filePath, TimeSpan startTime) {
+    public FileCaptureHelper(string filePath, TimeSpan startTime = default) {
         FilePath = filePath;
         StartTime = startTime;
     }
