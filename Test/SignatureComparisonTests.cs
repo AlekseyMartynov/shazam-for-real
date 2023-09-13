@@ -1,6 +1,7 @@
 ﻿#if DEBUG
 using MathNet.Numerics;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,17 +29,7 @@ namespace Project.Test {
                 out var refBands
             );
 
-            // Official signature has more peaks
-            // Most of them are at edges < STRIPE_DIST
-
-            // Possible explanation for padding in official signature
-            // start - first chunk completes the FFT window so it is immediately ready for analysis
-            // end - to absorb remaining samples? for symmetry?
-
-            var refSampleCountPadding = Analysis.WINDOW_SIZE - Analysis.CHUNK_SIZE;
-            var refStripeOffset = refSampleCountPadding / Analysis.CHUNK_SIZE;
-
-            Assert.Equal(refSampleCount - 2 * refSampleCountPadding, mySampleCount + myRemainingSampleCount);
+            Assert.Equal(refSampleCount, mySampleCount + myRemainingSampleCount);
 
             var hitCount = 0;
             var missCount = 0;
@@ -50,7 +41,7 @@ namespace Project.Test {
             var refPeaks = refBands.SelectMany(i => i).ToList();
 
             foreach(var myPeak in myPeaks) {
-                var refPeak = refPeaks.FindOne(myPeak.StripeIndex + refStripeOffset, myPeak.InterpolatedBin);
+                var refPeak = refPeaks.FindOne(myPeak.StripeIndex, myPeak.InterpolatedBin);
 
                 if(refPeak == null) {
                     missCount++;
@@ -63,7 +54,7 @@ namespace Project.Test {
                 refMagnList.Add(refPeak.LogMagnitude);
             }
 
-            Assert.True(1d * hitCount / myPeaks.Count > 0.75); // TODO
+            Assert.True(1d * hitCount / myPeaks.Count > 0.93);
 
             var (magnFitIntercept, magnFitSlope) = Fit.Line(myMagnList.ToArray(), refMagnList.ToArray());
 
@@ -78,10 +69,11 @@ namespace Project.Test {
             using var captureHelper = new FileCaptureHelper(path);
             captureHelper.Start();
 
+            var sampleProvider = AddPadding(captureHelper.SampleProvider);
             var chunk = new float[Analysis.CHUNK_SIZE];
 
             while(true) {
-                var readCount = captureHelper.SampleProvider.Read(chunk, 0, chunk.Length);
+                var readCount = sampleProvider.Read(chunk, 0, chunk.Length);
 
                 if(readCount < chunk.Length) {
                     remainingSampleCount = readCount;
@@ -110,6 +102,40 @@ namespace Project.Test {
 
             Assert.Equal(Analysis.SAMPLE_RATE, sampleRate);
         }
+
+        static ISampleProvider AddPadding(ISampleProvider sampleProvider) {
+            // Possible explanation for padding in official signature
+            //   start : first chunk completes the FFT window so it is immediately ready for analysis
+            //   end   : to absorb remaining samples? for symmetry?
+
+            var waveFormat = sampleProvider.WaveFormat;
+            var sampleCount = Analysis.WINDOW_SIZE - Analysis.CHUNK_SIZE;
+
+            return new ConcatenatingSampleProvider(new[] {
+                new FixedLenSilence(waveFormat, sampleCount),
+                sampleProvider,
+                new FixedLenSilence(waveFormat, sampleCount),
+            });
+        }
+
+        class FixedLenSilence : ISampleProvider {
+            int SamplesLeft;
+
+            public FixedLenSilence(WaveFormat waveFormat, int sampleCount) {
+                WaveFormat = waveFormat;
+                SamplesLeft = sampleCount;
+            }
+
+            public WaveFormat WaveFormat { get; private set; }
+
+            public int Read(float[] buffer, int offset, int count) {
+                count = Math.Min(count, SamplesLeft);
+                Array.Clear(buffer, offset, count);
+                SamplesLeft -= count;
+                return count;
+            }
+        }
+
     }
 
 }
