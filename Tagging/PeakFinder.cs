@@ -16,9 +16,6 @@ class PeakFinder {
         H_STRIPE_DIST = 45, H_BIN_DIST = 1,
         V_STRIPE_DIST = 3, V_BIN_DIST = 10;
 
-    // Peaks per second in a band
-    const int RATE = 12;
-
     static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
 
     static readonly int
@@ -69,6 +66,21 @@ class PeakFinder {
 
     public IEnumerable<PeakInfo> EnumerateAllPeaks() {
         return Bands.SelectMany(i => i);
+    }
+
+    public void ApplyRateLimit() {
+        // Derived by comparison with official signature
+        // StripeCount / 11 also works
+        var allowedCount = 12 + Analysis.StripeCount / 12;
+
+        foreach(var peakList in Bands) {
+            if(peakList.Count <= allowedCount)
+                continue;
+
+            peakList.Sort((x, y) => -Comparer<Single>.Default.Compare(x.LogMagnitude, y.LogMagnitude));
+            peakList.RemoveRange(allowedCount, peakList.Count - allowedCount);
+            peakList.Sort((x, y) => Comparer<Int32>.Default.Compare(x.StripeIndex, y.StripeIndex));
+        }
     }
 
     int GetBandIndex(float bin) {
@@ -130,43 +142,7 @@ class PeakFinder {
         if(bandIndex < 0)
             return;
 
-        var bandPeaks = Bands[bandIndex];
-
-        if(bandPeaks.Any()) {
-            var capturedDuration = 1d / Analysis.CHUNKS_PER_SECOND * (stripe - bandPeaks.First().StripeIndex);
-            var allowedCount = 1 + capturedDuration * RATE;
-            if(bandPeaks.Count > allowedCount) {
-#if FALSE
-                var pruneIndex = bandPeaks.FindLastIndex(l => l.LogMagnitude < newPeak.LogMagnitude);
-                if(pruneIndex < 0)
-                    return;
-#else
-                var pruneIndex = IndexOfMinLogMagnitude(bandPeaks);
-                if(newPeak.LogMagnitude <= bandPeaks[pruneIndex].LogMagnitude)
-                    return;
-#endif
-                bandPeaks.RemoveAt(pruneIndex);
-            }
-        }
-
-        bandPeaks.Add(newPeak);
+        Bands[bandIndex].Add(newPeak);
     }
 
-    static int IndexOfMinLogMagnitude(IEnumerable<PeakInfo> peaks) {
-        var minLogMagnitude = -1f;
-        var minIndex = -1;
-
-        var currIndex = 0;
-
-        foreach(var p in peaks) {
-            var currLogMagnitude = p.LogMagnitude;
-            if(minIndex < 0 || currLogMagnitude < minLogMagnitude) {
-                minLogMagnitude = currLogMagnitude;
-                minIndex = currIndex;
-            }
-            currIndex++;
-        }
-
-        return minIndex;
-    }
 }

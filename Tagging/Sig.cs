@@ -198,6 +198,7 @@ static class Sig {
     }
 
     static byte[][] GetBandData(PeakFinder finder) {
+        finder.ApplyRateLimit();
         return finder.EnumerateBandedPeaks().Select(GetBandData).ToArray();
     }
 

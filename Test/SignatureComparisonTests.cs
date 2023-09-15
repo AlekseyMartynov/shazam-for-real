@@ -40,6 +40,12 @@ namespace Project.Test {
             var myPeaks = myBands.SelectMany(i => i).ToList();
             var refPeaks = refBands.SelectMany(i => i).ToList();
 
+            //var tsvMy = ToTSV(myPeaks);
+            //var tsvRef = ToTSV(refPeaks);
+
+            RemoveRefEdgePeaks(myPeaks, refPeaks);
+            Assert.True(Math.Abs(myPeaks.Count - refPeaks.Count) < 2);
+
             foreach(var myPeak in myPeaks) {
                 var refPeak = refPeaks.FindOne(myPeak.StripeIndex, myPeak.InterpolatedBin);
 
@@ -101,6 +107,29 @@ namespace Project.Test {
             );
 
             Assert.Equal(Analysis.SAMPLE_RATE, sampleRate);
+        }
+
+        static void RemoveRefEdgePeaks(IReadOnlyList<PeakInfo> myPeaks, List<PeakInfo> refPeaks) {
+            // Official signature contains peaks even if there is only a single stripe
+            // My signature requires full search distance around each peak (see Analysis_StripeAddedCallback)
+
+            var myMinStripe = myPeaks.Min(i => i.StripeIndex);
+            var myMaxStripe = myPeaks.Max(i => i.StripeIndex);
+
+            refPeaks.RemoveAll(i => i.StripeIndex < myMinStripe || i.StripeIndex > myMaxStripe);
+        }
+
+        static string ToTSV(IEnumerable<PeakInfo> peaks) {
+            return String.Join("\n",
+                peaks
+                    .OrderBy(p => p.StripeIndex)
+                    .ThenBy(p => p.InterpolatedBin)
+                    .Select(p => String.Join("\t", new[] {
+                        p.StripeIndex,
+                        p.InterpolatedBin,
+                        //p.LogMagnitude,
+                    }))
+            );
         }
 
         static ISampleProvider AddPadding(ISampleProvider sampleProvider) {
