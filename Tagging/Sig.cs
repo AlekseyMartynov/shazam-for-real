@@ -120,22 +120,42 @@ static class Sig {
         using var mem = new MemoryStream(data);
         using var reader = new BinaryReader(mem);
 
-        if(reader.ReadUInt32() != 0xcafe2580)
-            throw new NotSupportedException();
+        var legacyFormat = false;
 
-        mem.Position = 7 * 4;
-        sampleRate = SampleRateFromCode(reader.ReadInt32() >> 27);
+        if(reader.ReadUInt32() != 0xcafe2580) {
+            if(reader.ReadUInt32() == 0x789abc05) {
+                legacyFormat = true;
+            } else {
+                throw new NotSupportedException();
+            }
+        }
 
-        mem.Position = 10 * 4;
-        sampleCount = reader.ReadInt32();
+        if(legacyFormat) {
+            sampleRate = 16000;
 
-        mem.Position = 14 * 4;
+            mem.Position = 21 * 4;
+            sampleCount = 2 * reader.ReadInt32();
+
+            mem.Position = 26 * 4;
+        } else {
+            mem.Position = 7 * 4;
+            sampleRate = SampleRateFromCode(reader.ReadInt32() >> 27);
+
+            mem.Position = 10 * 4;
+            sampleCount = reader.ReadInt32();
+
+            mem.Position = 14 * 4;
+        }
 
         var writableBands = new List<PeakInfo>[4];
         for(var i = 0; i < 4; i++)
             writableBands[i] = new();
 
         while(mem.Position < mem.Length) {
+            if(legacyFormat) {
+                mem.Position += 4;
+            }
+
             var fat = false;
             var bandIndex = 0;
             var header = reader.ReadInt32();
@@ -149,6 +169,11 @@ static class Sig {
             }
 
             var len = reader.ReadInt32();
+
+            if(legacyFormat) {
+                mem.Position += 3 * 4;
+            }
+
             var end = mem.Position + len;
             var stripe = 0;
 

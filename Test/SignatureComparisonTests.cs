@@ -13,18 +13,22 @@ namespace Project.Test {
 
     public class SignatureComparisonTests {
 
-        [Fact]
-        public void Ref_SigX_10_1_3() {
+        [Theory]
+        [InlineData("10.1.3")]             // APK v13.45
+        [InlineData("7.2.0")]              // APK v8.66
+        [InlineData("6.0.4", false)]       // APK v8.3
+        [InlineData("5.1.0", false, 3)]    // APK v7.11
+        public void Ref_SigX(string version, bool interpolation = true, int bandCount = 4) {
             CreateFromFile(
                 Path.Combine(TestHelper.DATA_DIR, "test.mp3"),
+                interpolation,
                 out var mySampleCount,
                 out var myRemainingSampleCount,
                 out var myBands
             );
 
             LoadBinary(
-                // Generated using libsigx.so from Android app v13.45
-                Path.Combine(TestHelper.DATA_DIR, "test-sigx-10.1.3.bin"),
+                Path.Combine(TestHelper.DATA_DIR, $"test-sigx-{version}.bin"),
                 out var refSampleCount,
                 out var refBands
             );
@@ -37,7 +41,7 @@ namespace Project.Test {
             var myMagnList = new List<double>();
             var refMagnList = new List<double>();
 
-            var myPeaks = myBands.SelectMany(i => i).ToList();
+            var myPeaks = myBands.Take(bandCount).SelectMany(i => i).ToList();
             var refPeaks = refBands.SelectMany(i => i).ToList();
 
             //var tsvMy = ToTSV(myPeaks);
@@ -68,9 +72,9 @@ namespace Project.Test {
             Assert.True(Math.Abs(magnFitIntercept) < 10);
         }
 
-        static void CreateFromFile(string path, out int sampleCount, out int remainingSampleCount, out Bands bands) {
+        static void CreateFromFile(string path, bool interpolation, out int sampleCount, out int remainingSampleCount, out Bands bands) {
             var analysis = new Analysis();
-            var finder = new PeakFinder(analysis);
+            var finder = new PeakFinder(analysis, interpolation);
 
             using var captureHelper = new FileCaptureHelper(path);
             captureHelper.Start();

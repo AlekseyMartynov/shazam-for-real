@@ -27,12 +27,14 @@ class PeakFinder {
         LOG_MIN_MAGN_SQUARED = MathF.Log(MIN_MAGN_SQUARED);
 
     readonly Analysis Analysis;
+    readonly bool Interpolation;
     readonly IReadOnlyList<List<PeakInfo>> Bands;
 
-    public PeakFinder(Analysis analysis) {
+    public PeakFinder(Analysis analysis, bool interpolation = true) {
         analysis.SetStripeAddedCallback(Analysis_StripeAddedCallback);
 
         Analysis = analysis;
+        Interpolation = interpolation;
 
         Bands = Enumerable.Range(0, BAND_FREQS.Count - 1)
             .Select(_ => new List<PeakInfo>())
@@ -98,6 +100,10 @@ class PeakFinder {
     }
 
     PeakInfo CreatePeakAt(int stripe, int bin) {
+        if(!Interpolation) {
+            return new PeakInfo(stripe, bin, GetLogMagnitude(stripe, bin));
+        }
+
         // Quadratic Interpolation of Spectral Peaks
         // https://stackoverflow.com/a/59140547
         // https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html
