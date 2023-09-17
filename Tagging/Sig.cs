@@ -15,7 +15,7 @@ static class Sig {
             writer.Write(0xCAFE2580); // Dialling "2580" on your phone and holding it up to the music, https://www.shazam.com/company
             writer.Write(-1);
             writer.Write(-1);
-            writer.Write(0x94119C00);
+            writer.Write(GetVersionCode());
             writer.Write(0);
             writer.Write(0);
             writer.Write(0);
@@ -23,7 +23,7 @@ static class Sig {
             writer.Write(0);
             writer.Write(0);
             writer.Write(sampleCount);
-            writer.Write(0x007C0000);
+            writer.Write(0x007C0000); // padding + unknown, (0x007C0000 & 0xFFF80000) >> 19 == 15
             writer.Write(0x40000000);
             writer.Write(-1);
 
@@ -78,9 +78,9 @@ static class Sig {
             writer.Write(0xDEADBEEF);
             writer.Write(Convert.ToInt32(sampleCount * 8000L / sampleRate));
             writer.Write(0);
-            writer.Write(0x31100000);
-            writer.Write(0x0f);
-            writer.Write(0x42700000);
+            writer.Write(GetVersionCode());
+            writer.Write(15); // padding
+            writer.Write((float)sampleCount / sampleRate);
 
             var bandData = GetBandData(finder);
             for(var i = 0; i < bandData.Length; i++) {
@@ -290,6 +290,23 @@ static class Sig {
             4 => 32000,
             _ => throw new NotSupportedException()
         };
+    }
+
+    static uint GetVersionCode() {
+        var v1 = (10, 1, 3); // extractor/generator/pipeline version
+        var v2 = (7, 0, 0);  // unpacker version
+
+        var result = 0;
+
+        result += v1.Item1 << 25;
+        result += v1.Item2 << 20;
+        result += v1.Item3 << 15;
+
+        result += v2.Item1 << 10;
+        result += v2.Item2 << 5;
+        result += v2.Item3;
+
+        return (uint)result ^ 0x80000000;
     }
 
 }
