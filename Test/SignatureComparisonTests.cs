@@ -14,6 +14,7 @@ namespace Project.Test {
     public class SignatureComparisonTests {
 
         [Theory]
+        [InlineData("10.2.1")]             // https://developer.apple.com/shazamkit/android/
         [InlineData("10.1.3")]             // APK v13.45
         [InlineData("7.2.0")]              // APK v8.66
         [InlineData("6.0.4", false)]       // APK v8.3

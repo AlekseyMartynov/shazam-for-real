@@ -120,9 +120,18 @@ static class Sig {
         using var mem = new MemoryStream(data);
         using var reader = new BinaryReader(mem);
 
+        var magicKey = reader.ReadUInt32();
         var legacyFormat = false;
 
-        if(reader.ReadUInt32() != 0xcafe2580) {
+        if(magicKey == 0x25802580) {
+            var w1 = reader.ReadInt32(); // count?
+            var w2 = reader.ReadInt32(); // offset?
+            if(w1 != 1 || w2 != 12)
+                throw new NotSupportedException();
+            magicKey = reader.ReadUInt32();
+        }
+
+        if(magicKey != 0xcafe2580) {
             if(reader.ReadUInt32() == 0x789abc05) {
                 legacyFormat = true;
             } else {
@@ -133,18 +142,18 @@ static class Sig {
         if(legacyFormat) {
             sampleRate = 16000;
 
-            mem.Position = 21 * 4;
+            mem.Position += 19 * 4;
             sampleCount = 2 * reader.ReadInt32();
 
-            mem.Position = 26 * 4;
+            mem.Position += 4 * 4;
         } else {
-            mem.Position = 7 * 4;
+            mem.Position += 6 * 4;
             sampleRate = SampleRateFromCode(reader.ReadInt32() >> 27);
 
-            mem.Position = 10 * 4;
+            mem.Position += 2 * 4;
             sampleCount = reader.ReadInt32();
 
-            mem.Position = 14 * 4;
+            mem.Position += 3 * 4;
         }
 
         var writableBands = new List<PeakInfo>[4];
