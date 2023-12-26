@@ -109,7 +109,7 @@ jobs:
 
     # Ready
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.rid }}
         path: ${{ env.OUT_DIR }}/*
