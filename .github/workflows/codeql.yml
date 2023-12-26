@@ -29,12 +29,12 @@ jobs:
       with:
         dotnet-version: 8
 
-    - uses: github/codeql-action/init@v2
+    - uses: github/codeql-action/init@v3
       with:
         languages: csharp
 
     - run: dotnet build
 
-    - uses: github/codeql-action/analyze@v2
+    - uses: github/codeql-action/analyze@v3
       with:
         category: "/language:csharp"
