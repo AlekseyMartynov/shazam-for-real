@@ -102,8 +102,9 @@ jobs:
 
     - if: matrix.rid == 'win-x64'
       run: |
-        choco install fmedia
-        Start-Job -ScriptBlock { fmedia --repeat-all ${{ env.TEST_FILE }} }
+        iwr https://github.com/stsaz/fmedia/releases/download/v1.31/fmedia-1.31-windows-x64.zip -OutFile fmedia.zip
+        Expand-Archive fmedia.zip .
+        Start-Job -ScriptBlock { .\fmedia\fmedia --repeat-all ${{ env.TEST_FILE }} }
         " " | ${{ env.OUT_BIN }} > test-out-live
         findstr ${{ env.TEST_TRACK_ID }} test-out-live
 
