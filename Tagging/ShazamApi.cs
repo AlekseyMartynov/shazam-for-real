@@ -3,7 +3,6 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Project;
@@ -39,12 +38,17 @@ static class ShazamApi {
         var result = new ShazamResult();
 
         var res = await HTTP.PostAsync(url, postData);
-        var json = await res.Content.ReadAsStringAsync();
-        var obj = JsonSerializer.Deserialize(json, ShazamApiJsonSerializerContext.Default.JsonElement);
+        var json = await res.Content.ReadAsByteArrayAsync();
+        var obj = ParseJson(json);
 
         PopulateResult(obj, result);
 
         return result;
+    }
+
+    static JsonElement ParseJson(byte[] json) {
+        var reader = new Utf8JsonReader(json.AsSpan());
+        return JsonElement.ParseValue(ref reader);
     }
 
     static void PopulateResult(JsonElement rootElement, ShazamResult result) {
@@ -127,8 +131,4 @@ static class ShazamApi {
         value = element;
         return true;
     }
-}
-
-[JsonSerializable(typeof(JsonElement))]
-partial class ShazamApiJsonSerializerContext : JsonSerializerContext {
 }
