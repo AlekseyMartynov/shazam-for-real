@@ -16,6 +16,7 @@
     <DebuggerSupport>false</DebuggerSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <IlcDisableReflection>true</IlcDisableReflection>
     <TargetName>$(AssemblyName).$(RuntimeIdentifier)</TargetName>
     <StripSymbols>true</StripSymbols>
   </PropertyGroup>
