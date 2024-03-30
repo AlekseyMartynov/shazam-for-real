@@ -83,7 +83,10 @@ static class ShazamApi {
     }
 
     static void PopulateAttributes(JsonElement rootElement, ShazamResult result) {
-        if(!TryGetNestedProperty(rootElement, ["resources", "shazam-songs", result.ID, "attributes"], out var attrsElement))
+        if(!TryGetNestedProperty(rootElement, ["resources", "shazam-songs", result.ID], out var shazamSongElement))
+            return;
+
+        if(!shazamSongElement.TryGetProperty("attributes", out var attrsElement))
             return;
 
         if(attrsElement.TryGetProperty("title", out var titleElement))
@@ -100,6 +103,8 @@ static class ShazamApi {
         } else {
             result.Url = "https://www.shazam.com/track/" + result.ID;
         }
+
+        PopulateAppleID(shazamSongElement, result);
     }
 
     static string ImproveUrl(string url) {
@@ -111,6 +116,14 @@ static class ShazamApi {
         url = Uri.UnescapeDataString(url);
 
         return url;
+    }
+
+    static void PopulateAppleID(JsonElement shazamSongElement, ShazamResult result) {
+        if(!shazamSongElement.TryGetProperty("relationships", out var relsElement))
+            return;
+
+        if(TryGetNestedProperty(relsElement, ["songs", "data"], out var songsElement))
+            TryGetFirstItemID(songsElement, out result.AppleSongID);
     }
 
     static bool TryGetFirstItemID(JsonElement array, out string id) {
