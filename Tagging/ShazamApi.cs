@@ -105,6 +105,12 @@ static class ShazamApi {
         }
 
         PopulateAppleID(shazamSongElement, result);
+
+        if(String.IsNullOrEmpty(result.AppleSongID)) {
+            // As of March 2024
+            // shazam.com/track/[ID] redirects to shazam.com/song/[AppleSongID]
+            result.Url = result.Url.Replace("/track/", "/snippets/email-share/");
+        }
     }
 
     static string ImproveUrl(string url) {
