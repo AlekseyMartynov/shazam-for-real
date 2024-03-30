@@ -69,13 +69,7 @@ static class ShazamApi {
         if(!resultsElement.TryGetProperty("matches", out var matchesElement))
             return;
 
-        if(matchesElement.ValueKind != JsonValueKind.Array || matchesElement.GetArrayLength() < 1)
-            return;
-
-        if(!matchesElement[0].TryGetProperty("id", out var idElement))
-            return;
-
-        result.ID = idElement.GetString();
+        TryGetFirstItemID(matchesElement, out result.ID);
     }
 
     static void PopulateRetryMs(JsonElement resultsElement, ShazamResult result) {
@@ -117,6 +111,17 @@ static class ShazamApi {
         url = Uri.UnescapeDataString(url);
 
         return url;
+    }
+
+    static bool TryGetFirstItemID(JsonElement array, out string id) {
+        if(array.ValueKind == JsonValueKind.Array && array.GetArrayLength() > 0) {
+            if(array[0].TryGetProperty("id", out var itemElement)) {
+                id = itemElement.GetString();
+                return true;
+            }
+        }
+        id = default;
+        return false;
     }
 
     static bool TryGetNestedProperty(JsonElement element, string[] names, out JsonElement value) {
