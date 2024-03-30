@@ -13,7 +13,7 @@ static class EternalSilence {
         if(provider == null)
             return SILENCE;
 
-        return new ConcatenatingSampleProvider(new[] { provider, SILENCE });
+        return new ConcatenatingSampleProvider([provider, SILENCE]);
     }
 
 }

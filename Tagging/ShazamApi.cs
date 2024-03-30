@@ -79,7 +79,7 @@ static class ShazamApi {
     }
 
     static void PopulateRetryMs(JsonElement resultsElement, ShazamResult result) {
-        if(!TryGetNestedProperty(resultsElement, new[] { "retry", "retryInMilliseconds" }, out var retryMsElement))
+        if(!TryGetNestedProperty(resultsElement, ["retry", "retryInMilliseconds"], out var retryMsElement))
             return;
 
         if(!retryMsElement.TryGetInt32(out var retryMs))
@@ -89,9 +89,7 @@ static class ShazamApi {
     }
 
     static void PopulateAttributes(JsonElement rootElement, ShazamResult result) {
-        var path = new[] { "resources", "shazam-songs", result.ID, "attributes" };
-
-        if(!TryGetNestedProperty(rootElement, path, out var attrsElement))
+        if(!TryGetNestedProperty(rootElement, ["resources", "shazam-songs", result.ID, "attributes"], out var attrsElement))
             return;
 
         if(attrsElement.TryGetProperty("title", out var titleElement))

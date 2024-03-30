@@ -145,11 +145,11 @@ namespace Project.Test {
             var waveFormat = sampleProvider.WaveFormat;
             var sampleCount = Analysis.WINDOW_SIZE - Analysis.CHUNK_SIZE;
 
-            return new ConcatenatingSampleProvider(new[] {
+            return new ConcatenatingSampleProvider([
                 new FixedLenSilence(waveFormat, sampleCount),
                 sampleProvider,
                 new FixedLenSilence(waveFormat, sampleCount),
-            });
+            ]);
         }
 
         class FixedLenSilence : ISampleProvider {

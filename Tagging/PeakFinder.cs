@@ -16,7 +16,7 @@ class PeakFinder {
         H_STRIPE_DIST = 45, H_BIN_DIST = 1,
         V_STRIPE_DIST = 3, V_BIN_DIST = 10;
 
-    static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
+    static readonly IReadOnlyList<int> BAND_FREQS = [250, 520, 1450, 3500, 5500];
 
     static readonly int
         MIN_BIN = Math.Max(Analysis.FreqToBin(BAND_FREQS.Min()), V_BIN_DIST),
