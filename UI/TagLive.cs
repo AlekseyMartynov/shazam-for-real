@@ -58,7 +58,7 @@ static class TagLive {
 
     static void Navigate(string url) {
         if(OperatingSystem.IsWindows()) {
-            using var proc = Process.Start("explorer", url);
+            using var proc = Process.Start("explorer", '"' + url + '"');
             proc.WaitForExit();
         }
     }

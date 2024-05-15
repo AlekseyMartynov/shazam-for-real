@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 namespace Project;
 
 static class ShazamApi {
+    const string COUNTRY = "US";
+
     static readonly HttpClient HTTP = new HttpClient();
     static readonly string INSTALLATION_ID = Guid.NewGuid().ToString();
 
@@ -31,7 +33,7 @@ static class ShazamApi {
         payloadWriter.WriteEndObject();
         payloadWriter.Flush();
 
-        var url = "https://amp.shazam.com/match/v1/en/US/android/" + INSTALLATION_ID + "/" + tagId;
+        var url = "https://amp.shazam.com/match/v1/en/" + COUNTRY + "/android/" + INSTALLATION_ID + "/" + tagId;
         var postData = new ByteArrayContent(payloadStream.GetBuffer(), 0, (int)payloadStream.Length);
         postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
@@ -110,6 +112,10 @@ static class ShazamApi {
             // As of March 2024
             // shazam.com/track/[ID] redirects to shazam.com/song/[AppleSongID]
             result.Url = result.Url.Replace("/track/", "/snippets/email-share/");
+        } else {
+            // Some URLs redirect to / unless the 'co' parameter is kept
+            // Examples: 11180294, 51774667, 538859473
+            result.Url = result.Url + "?co=" + COUNTRY;
         }
     }
 
