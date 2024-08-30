@@ -111,7 +111,9 @@ static class ShazamApi {
         if(String.IsNullOrEmpty(result.AppleSongID)) {
             // As of March 2024
             // shazam.com/track/[ID] redirects to shazam.com/song/[AppleSongID]
-            result.Url = result.Url.Replace("/track/", "/snippets/email-share/");
+            if(TryGetNestedProperty(attrsElement, ["share", "html"], out var shareHtmlElement)) {
+                result.Url = shareHtmlElement.GetString();
+            }
         } else {
             // Some URLs redirect to / unless the 'co' parameter is kept
             // Examples: 11180294, 51774667, 538859473
