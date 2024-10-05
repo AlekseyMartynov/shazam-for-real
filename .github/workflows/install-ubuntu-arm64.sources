@@ -1,0 +1,27 @@
+Types: deb
+URIs: http://azure.archive.ubuntu.com/ubuntu/
+Suites: CODENAME CODENAME-updates CODENAME-backports
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+Architectures: amd64
+
+Types: deb
+URIs: http://azure.archive.ubuntu.com/ubuntu/
+Suites: CODENAME-security
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+Architectures: amd64
+
+Types: deb
+URIs: http://azure.ports.ubuntu.com/ubuntu-ports/
+Suites: CODENAME CODENAME-updates CODENAME-backports
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+Architectures: arm64
+
+Types: deb
+URIs: http://azure.ports.ubuntu.com/ubuntu-ports/
+Suites: CODENAME-security
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+Architectures: arm64

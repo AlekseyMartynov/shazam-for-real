@@ -4,12 +4,8 @@ if [ $(uname -m) != "x86_64" ] || [ -z "$CODENAME" ]; then
     return 1
 fi
 
-sed -i 's|^deb |deb [arch=amd64] |g' /etc/apt/sources.list
-
-cat >> /etc/apt/sources.list <<EOF
-deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $CODENAME main restricted
-deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $CODENAME-updates main restricted
-EOF
+cp -f .github/workflows/install-ubuntu-arm64.sources /etc/apt/sources.list.d/ubuntu.sources
+sed -i "s|CODENAME|$CODENAME|g" /etc/apt/sources.list.d/ubuntu.sources
 
 dpkg --add-architecture arm64
 
