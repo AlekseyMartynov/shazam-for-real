@@ -49,7 +49,7 @@ jobs:
         - { os: windows-latest, rid: win-x64 }
         - { os: windows-latest, rid: win-arm64 }
         - { os: ubuntu-latest, rid: linux-x64 }
-        - { os: ubuntu-latest, rid: linux-arm64 }
+        - { os: ubuntu-24.04, rid: linux-arm64 } # TODO
         - { os: macos-latest, rid: osx-x64 }
         - { os: macos-latest, rid: osx-arm64 }
 
