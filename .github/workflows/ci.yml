@@ -49,7 +49,7 @@ jobs:
         - { os: windows-latest, rid: win-x64 }
         - { os: windows-latest, rid: win-arm64 }
         - { os: ubuntu-latest, rid: linux-x64 }
-        - { os: ubuntu-24.04, rid: linux-arm64 } # TODO
+        - { os: ubuntu-latest, rid: linux-arm64 }
         - { os: macos-latest, rid: osx-x64 }
         - { os: macos-latest, rid: osx-arm64 }
 
@@ -57,7 +57,7 @@ jobs:
       OUT_DIR: ./bin/Release/net8/${{ matrix.rid }}/native
       OUT_BIN: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }}
       TEST_FILE: TestData/test.mp3
-      TEST_TRACK_ID: 11188983
+      TEST_TRACK_ID: 91109197
 
     runs-on: ${{ matrix.os }}
 
@@ -102,9 +102,9 @@ jobs:
 
     - if: matrix.rid == 'win-x64'
       run: |
-        iwr https://github.com/stsaz/fmedia/releases/download/v1.31/fmedia-1.31-windows-x64.zip -OutFile fmedia.zip
-        Expand-Archive fmedia.zip .
-        Start-Job -ScriptBlock { .\fmedia\fmedia --repeat-all ${{ env.TEST_FILE }} }
+        iwr https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-7.1-essentials_build.zip -OutFile ffmpeg.zip
+        Expand-Archive ffmpeg.zip
+        Start-Process '.\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffplay' '-loop 0 ${{ env.TEST_FILE }}'
         " " | ${{ env.OUT_BIN }} > test-out-live
         findstr ${{ env.TEST_TRACK_ID }} test-out-live
 
