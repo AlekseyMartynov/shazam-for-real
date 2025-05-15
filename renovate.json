@@ -5,6 +5,9 @@
     ],
     "prConcurrentLimit": 2,
     "semanticCommits": "enabled",
+    "ignoreDeps": [
+        "System.Drawing.Common"
+    ],
     "packageRules": [
         {
             "groupName": "NAudio monorepo",
