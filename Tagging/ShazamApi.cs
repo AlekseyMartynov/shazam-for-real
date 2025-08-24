@@ -100,8 +100,11 @@ static class ShazamApi {
         if(attrsElement.TryGetProperty("webUrl", out var webUrlElement))
             result.Url = webUrlElement.GetString();
 
+        var slug = "";
+
         if(!String.IsNullOrEmpty(result.Url)) {
             result.Url = ImproveUrl(result.Url);
+            slug = ExtractSlug(result.Url);
         } else {
             result.Url = "https://www.shazam.com/track/" + result.ID;
         }
@@ -112,7 +115,7 @@ static class ShazamApi {
             // As of March 2024
             // shazam.com/track/[ID] redirects to shazam.com/song/[AppleSongID]
             if(TryGetNestedProperty(attrsElement, ["share", "html"], out var shareHtmlElement)) {
-                result.Url = shareHtmlElement.GetString();
+                result.Url = shareHtmlElement.GetString() + "#" + slug;
             }
         } else {
             // Some URLs redirect to / unless the 'co' parameter is kept
@@ -130,6 +133,10 @@ static class ShazamApi {
         url = Uri.UnescapeDataString(url);
 
         return url;
+    }
+
+    static string ExtractSlug(string url) {
+        return url.Substring(1 + url.LastIndexOf('/'));
     }
 
     static void PopulateAppleID(JsonElement shazamSongElement, ShazamResult result) {
