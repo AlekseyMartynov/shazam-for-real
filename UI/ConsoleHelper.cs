@@ -29,4 +29,8 @@ static class ConsoleHelper {
         Console.CursorLeft = 0;
     }
 
+    public static void WriteTime(TimeSpan time) {
+        Console.Write(time.ToString(@"hh\:mm\:ss"));
+        Console.Write(" ");
+    }
 }

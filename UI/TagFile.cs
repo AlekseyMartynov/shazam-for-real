@@ -31,8 +31,7 @@ static class TagFile {
         while(true) {
             captureHelper.SkipTo(startTime);
 
-            Console.Write(captureHelper.CurrentTime.ToString(@"hh\:mm\:ss"));
-            Console.Write(" ");
+            ConsoleHelper.WriteTime(captureHelper.CurrentTime);
 
             var result = await CaptureAndTag.RunAsync(captureHelper);
 
