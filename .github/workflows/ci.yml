@@ -23,7 +23,7 @@ jobs:
 
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 8
+        dotnet-version: 10
 
     - run: dotnet format Project.csproj --verify-no-changes
 
@@ -35,7 +35,7 @@ jobs:
 
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 8
+        dotnet-version: 10
 
     - run: dotnet test --logger "console;verbosity=detailed"
 
@@ -54,8 +54,8 @@ jobs:
         - { os: macos-latest, rid: osx-arm64 }
 
     env:
-      OUT_DIR: ./bin/Release/net8/${{ matrix.rid }}/native
-      OUT_BIN: ./bin/Release/net8/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }}
+      OUT_DIR: ./bin/Release/net10.0/${{ matrix.rid }}/native
+      OUT_BIN: ./bin/Release/net10.0/${{ matrix.rid }}/native/Shazam.${{ matrix.rid }}
       TEST_FILE: TestData/test.mp3
       TEST_TRACK_SLUG: doo-uap
 
@@ -66,7 +66,7 @@ jobs:
 
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 8
+        dotnet-version: 10
 
     - if: matrix.rid == 'linux-arm64'
       run: sudo sh -e .github/workflows/install-ubuntu-arm64.sh
