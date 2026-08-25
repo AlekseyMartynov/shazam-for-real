@@ -25,7 +25,6 @@ class FileCaptureHelper : ICaptureHelper {
     }
 
     public TimeSpan CurrentTime => WaveStream != null ? WaveStream.CurrentTime : TimeSpan.Zero;
-    public TimeSpan TotalTime => WaveStream != null ? WaveStream.TotalTime : TimeSpan.Zero;
 
     public bool Live => false;
     public ISampleProvider SampleProvider { get; private set; }
@@ -56,14 +55,6 @@ class FileCaptureHelper : ICaptureHelper {
         } finally {
             ArrayPool<float>.Shared.Return(buf);
         }
-    }
-
-    public void SeekTo(TimeSpan time) {
-        if(WaveStream is not WaveFileReader) {
-            // TODO not sure about MP3 seek accuracy
-            throw new NotSupportedException();
-        }
-        WaveStream.CurrentTime = time;
     }
 
     WaveStream CreateWaveStream() {
