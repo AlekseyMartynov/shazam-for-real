@@ -19,6 +19,8 @@
     <IlcDisableReflection>true</IlcDisableReflection>
     <TargetName>$(AssemblyName).$(RuntimeIdentifier)</TargetName>
     <StripSymbols>true</StripSymbols>
+    <OptimizationPreference>Size</OptimizationPreference>
+    <StackTraceSupport>false</StackTraceSupport>
   </PropertyGroup>
 
   <PropertyGroup>
