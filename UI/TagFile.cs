@@ -12,7 +12,7 @@ static class TagFile {
         var startTime = TimeSpan.Zero;
         var tillEnd = false;
 
-        foreach(var a in args.Skip(1)) {
+        foreach(var a in args.AsSpan().Slice(1)) {
             if(a == "till-end") {
                 tillEnd = true;
             } else {

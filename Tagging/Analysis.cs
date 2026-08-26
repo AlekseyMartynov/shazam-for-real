@@ -35,11 +35,11 @@ class Analysis {
         StripeAddedCallback = callback;
     }
 
-    public void AddChunk(float[] chunk) {
+    public void AddChunk(ReadOnlySpan<float> chunk) {
         if(chunk.Length != CHUNK_SIZE)
             throw new Exception();
 
-        Array.Copy(chunk, 0, WindowRing, WindowRingPos, CHUNK_SIZE);
+        chunk.CopyTo(WindowRing.AsSpan(WindowRingPos, CHUNK_SIZE));
 
         ProcessedSamples += CHUNK_SIZE;
 

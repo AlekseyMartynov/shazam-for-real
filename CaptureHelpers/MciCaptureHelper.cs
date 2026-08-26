@@ -124,7 +124,7 @@ partial class MciCaptureHelper : ICaptureHelper {
         return "rec" + i;
     }
 
-    static string MciSend(params object[] command) {
+    static string MciSend(params ReadOnlySpan<object> command) {
         return MciSend(String.Join(" ", command));
     }
 

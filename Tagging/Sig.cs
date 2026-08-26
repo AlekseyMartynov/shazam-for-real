@@ -37,7 +37,7 @@ static class Sig {
             var totalLen = (int)mem.Length;
             var contentLen = totalLen - 48;
 
-            foreach(var i in new[] { 2, 13 }) {
+            foreach(var i in (ReadOnlySpan<int>)[2, 13]) {
                 mem.Position = i * 4;
                 writer.Write(contentLen);
             }
@@ -96,7 +96,7 @@ static class Sig {
             var totalLen = (int)mem.Length;
             var contentLen = totalLen - 32;
 
-            foreach(var i in new[] { 0, 5, 10 }) {
+            foreach(var i in (ReadOnlySpan<int>)[0, 5, 10]) {
                 mem.Position = i * 4;
                 writer.Write(contentLen);
             }

@@ -48,8 +48,8 @@ static class ShazamApi {
         return result;
     }
 
-    static JsonElement ParseJson(byte[] json) {
-        var reader = new Utf8JsonReader(json.AsSpan());
+    static JsonElement ParseJson(ReadOnlySpan<byte> json) {
+        var reader = new Utf8JsonReader(json);
         return JsonElement.ParseValue(ref reader);
     }
 
@@ -158,7 +158,7 @@ static class ShazamApi {
         return false;
     }
 
-    static bool TryGetNestedProperty(JsonElement element, string[] names, out JsonElement value) {
+    static bool TryGetNestedProperty(JsonElement element, ReadOnlySpan<string> names, out JsonElement value) {
         foreach(var name in names) {
             if(!element.TryGetProperty(name, out element)) {
                 value = default;
