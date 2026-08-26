@@ -12,6 +12,7 @@ csharp_new_line_before_else = false
 csharp_new_line_before_catch = false
 csharp_new_line_before_finally = false
 csharp_space_after_keywords_in_control_flow_statements = false
+dotnet_diagnostic.IDE0130.severity = none
 
 [*.{csproj,json,md,slnx,yml}]
 indent_size = 2
