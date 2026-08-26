@@ -33,4 +33,39 @@ static class ConsoleHelper {
         Console.Write(time.ToString(@"hh\:mm\:ss"));
         Console.Write(" ");
     }
+
+    public static char ReadKey() {
+        if(IsRedirected) {
+            return ReadKeyFromStdIn();
+        }
+        try {
+            return ReadKeyFromConsole();
+        } catch {
+            return ReadKeyFromStdIn();
+        }
+    }
+
+    static char ReadKeyFromConsole() {
+        // https://stackoverflow.com/a/3769828
+        while(Console.KeyAvailable) {
+            Console.ReadKey(true);
+        }
+        return Console.ReadKey(true).KeyChar;
+    }
+
+    static char ReadKeyFromStdIn() {
+        var last = 0;
+        while(true) {
+            var next = Console.In.Read();
+            switch(next) {
+                case -1:
+                    return (char)last;
+                case 0xA or 0xD:
+                    continue;
+                default:
+                    last = next;
+                    break;
+            }
+        }
+    }
 }

@@ -16,7 +16,7 @@ static class Interactive {
 #endif
 
         while(true) {
-            var key = Char.ToLower(ReadKey());
+            var key = Char.ToLower(ConsoleHelper.ReadKey());
 
             if(key == 'q' || key == '\0')
                 break;
@@ -49,13 +49,5 @@ static class Interactive {
 #endif
             "Q - quit"
         ));
-    }
-
-    static char ReadKey() {
-        try {
-            return Console.ReadKey(true).KeyChar;
-        } catch(InvalidOperationException) {
-            return Console.In.ReadToEnd().FirstOrDefault();
-        }
     }
 }
