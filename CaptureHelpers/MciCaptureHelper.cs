@@ -10,7 +10,7 @@ using System.Threading;
 namespace Project;
 
 partial class MciCaptureHelper : ICaptureHelper {
-    static readonly object SYNC = new();
+    static readonly Lock SYNC = new();
     static readonly int GENERATION_COUNT = 3;
     static readonly TimeSpan GENERATION_STEP = TimeSpan.FromSeconds(4);
     static readonly string TEMP_FILE_PATH = Path.Combine(Path.GetTempPath(), "shazam-for-real-tmp.wav");
