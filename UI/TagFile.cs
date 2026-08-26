@@ -33,17 +33,21 @@ static class TagFile {
 
             ConsoleHelper.WriteTime(captureHelper.CurrentTime);
 
-            var result = await CaptureAndTag.RunAsync(captureHelper);
+            try {
+                var result = await CaptureAndTag.RunAsync(captureHelper);
 
-            if(result == null) {
-                Console.WriteLine("END");
-                break;
-            }
+                if(result == null) {
+                    Console.WriteLine("END");
+                    break;
+                }
 
-            if(result.Success) {
-                Console.WriteLine(result.Url);
-            } else {
-                Console.WriteLine("-");
+                if(result.Success) {
+                    Console.WriteLine(result.Url);
+                } else {
+                    Console.WriteLine("-");
+                }
+            } catch(Exception x) {
+                Console.WriteLine("error: " + x.Message);
             }
 
             if(!tillEnd)
