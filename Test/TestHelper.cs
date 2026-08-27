@@ -17,21 +17,5 @@ static class TestHelper {
             "../../../TestData"
         );
     }
-
-    public static void SaveRaw(ISampleProvider sampleProvider, string path) {
-        using var rawFile = File.OpenWrite(path);
-
-        var wave = new SampleToWaveProvider16(sampleProvider);
-        var bufLen = 4096;
-        var buf = new byte[bufLen];
-
-        while(true) {
-            var readLen = wave.Read(buf, 0, bufLen);
-            rawFile.Write(buf, 0, readLen);
-            if(readLen < bufLen)
-                break;
-        }
-    }
-
 }
 #endif
