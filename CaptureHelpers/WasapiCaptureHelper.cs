@@ -1,4 +1,5 @@
-﻿using NAudio.CoreAudioApi;
+﻿#if WASAPI_CAPTURE
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
@@ -41,3 +42,4 @@ class WasapiCaptureHelper : ICaptureHelper {
         SampleProvider = Resampler.ToSampleProvider();
     }
 }
+#endif
