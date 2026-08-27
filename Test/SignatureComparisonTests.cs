@@ -142,34 +142,13 @@ namespace Project.Test {
             //   start : first chunk completes the FFT window so it is immediately ready for analysis
             //   end   : to absorb remaining samples? for symmetry?
 
-            var waveFormat = sampleProvider.WaveFormat;
             var sampleCount = Analysis.WINDOW_SIZE - Analysis.CHUNK_SIZE;
 
-            return new ConcatenatingSampleProvider([
-                new FixedLenSilence(waveFormat, sampleCount),
-                sampleProvider,
-                new FixedLenSilence(waveFormat, sampleCount),
-            ]);
+            return new OffsetSampleProvider(sampleProvider) {
+                DelayBySamples = sampleCount,
+                LeadOutSamples = sampleCount,
+            };
         }
-
-        class FixedLenSilence : ISampleProvider {
-            int SamplesLeft;
-
-            public FixedLenSilence(WaveFormat waveFormat, int sampleCount) {
-                WaveFormat = waveFormat;
-                SamplesLeft = sampleCount;
-            }
-
-            public WaveFormat WaveFormat { get; private set; }
-
-            public int Read(Span<float> buffer) {
-                var count = Math.Min(buffer.Length, SamplesLeft);
-                buffer[..count].Clear();
-                SamplesLeft -= count;
-                return count;
-            }
-        }
-
     }
 
 }
