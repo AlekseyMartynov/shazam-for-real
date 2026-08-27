@@ -81,10 +81,10 @@ namespace Project.Test {
             captureHelper.Start();
 
             var sampleProvider = AddPadding(captureHelper.SampleProvider);
-            var chunk = new float[Analysis.CHUNK_SIZE];
+            var chunk = (stackalloc float[Analysis.CHUNK_SIZE]);
 
             while(true) {
-                var readCount = sampleProvider.Read(chunk, 0, chunk.Length);
+                var readCount = sampleProvider.Read(chunk);
 
                 if(readCount < chunk.Length) {
                     remainingSampleCount = readCount;
@@ -162,9 +162,9 @@ namespace Project.Test {
 
             public WaveFormat WaveFormat { get; private set; }
 
-            public int Read(float[] buffer, int offset, int count) {
-                count = Math.Min(count, SamplesLeft);
-                Array.Clear(buffer, offset, count);
+            public int Read(Span<float> buffer) {
+                var count = Math.Min(buffer.Length, SamplesLeft);
+                buffer[..count].Clear();
                 SamplesLeft -= count;
                 return count;
             }

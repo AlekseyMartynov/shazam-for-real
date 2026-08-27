@@ -59,7 +59,7 @@ static class CaptureAndTag {
             if(captureHelper.SampleProvider != sampleProvider)
                 return ReadChunkResult.SampleProviderChanged;
 
-            var actualCount = sampleProvider.Read(CHUNK, offset, expectedCount);
+            var actualCount = sampleProvider.Read(CHUNK.AsSpan(offset, expectedCount));
 
             if(actualCount == expectedCount)
                 return ReadChunkResult.OK;

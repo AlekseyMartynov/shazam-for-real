@@ -48,8 +48,9 @@ class FileCaptureHelper : ICaptureHelper {
         var buf = ArrayPool<float>.Shared.Rent(len);
 
         try {
+            var bufSpan = buf.AsSpan(0, len);
             while(WaveStream.CurrentTime < time) {
-                if(SampleProvider.Read(buf, 0, len) < len)
+                if(SampleProvider.Read(bufSpan) < len)
                     break;
             }
         } finally {
