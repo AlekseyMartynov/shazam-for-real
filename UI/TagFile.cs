@@ -57,21 +57,17 @@ static class TagFile {
         }
     }
 
-    static bool TryParseTime(string text, out TimeSpan result) {
-        var segments = text.Split(':');
-        var values = new int[3];
-        var count = Math.Min(3, segments.Length);
-
-        Array.Reverse(segments);
-
-        for(var i = 0; i < count; i++) {
-            if(!Int32.TryParse(segments[i], out values[i])) {
-                result = TimeSpan.Zero;
+    internal static bool TryParseTime(ReadOnlySpan<char> text, out TimeSpan result) {
+        var count = 0;
+        var seconds = 0;
+        foreach(var r in text.Split(':')) {
+            if(++count > 3 || !Int32.TryParse(text[r], out var n) || n < 0) {
+                result = default;
                 return false;
             }
+            seconds = 60 * seconds + n;
         }
-
-        result = new TimeSpan(values[2], values[1], values[0]);
+        result = TimeSpan.FromSeconds(seconds);
         return true;
     }
 
