@@ -16,7 +16,7 @@ partial class MciCaptureHelper : ICaptureHelper {
     static readonly string TEMP_FILE_PATH = Path.Combine(Path.GetTempPath(), "shazam-for-real-tmp.wav");
 
     readonly bool[] GenerationRecording = new bool[GENERATION_COUNT];
-    readonly IList<Stream> GenerationStreams = new List<Stream>();
+    readonly List<IDisposable> PendingDispose = [];
 
     DateTime StartTime;
     Thread WorkerThread;
@@ -33,8 +33,8 @@ partial class MciCaptureHelper : ICaptureHelper {
 
         WorkerThread.Join();
 
-        foreach(var s in GenerationStreams)
-            s.Dispose();
+        foreach(var disposable in PendingDispose)
+            disposable.Dispose();
 
         if(File.Exists(TEMP_FILE_PATH))
             File.Delete(TEMP_FILE_PATH);
@@ -115,9 +115,15 @@ partial class MciCaptureHelper : ICaptureHelper {
     }
 
     void TempFileToSampleProvider() {
-        var stream = new MemoryStream(File.ReadAllBytes(TEMP_FILE_PATH));
-        GenerationStreams.Add(stream);
-        SampleProvider = new WaveFileReader(stream).ToSampleProvider();
+        // Buffer into memory because temp file will be overwritten
+        var stream = WithPendingDispose(new MemoryStream(File.ReadAllBytes(TEMP_FILE_PATH)));
+        var reader = WithPendingDispose(new WaveFileReader(stream));
+        SampleProvider = reader.ToSampleProvider();
+    }
+
+    T WithPendingDispose<T>(T obj) where T : IDisposable {
+        PendingDispose.Add(obj);
+        return obj;
     }
 
     static string GetAlias(int i) {
