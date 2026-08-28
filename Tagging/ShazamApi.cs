@@ -11,7 +11,7 @@ static class ShazamApi {
     const string COUNTRY = "US";
 
     static readonly HttpClient HTTP = new HttpClient();
-    static readonly string INSTALLATION_ID = Guid.NewGuid().ToString();
+    static readonly string INSTALLATION_ID = InitInstallationID();
 
     static ShazamApi() {
         HTTP.DefaultRequestHeaders.UserAgent.ParseAdd("curl/7");
@@ -167,5 +167,24 @@ static class ShazamApi {
         }
         value = element;
         return true;
+    }
+
+    static string InitInstallationID() {
+        var cacheFilePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache", "shazam-for-real", "id");
+        try {
+            return File.ReadAllText(cacheFilePath);
+        } catch {
+            var id = Guid.NewGuid().ToString();
+            try {
+                var cacheDir = Path.GetDirectoryName(cacheFilePath);
+                if(!Directory.Exists(cacheDir)) {
+                    Directory.CreateDirectory(cacheDir);
+                }
+                File.WriteAllText(cacheFilePath, id);
+            } catch {
+                // Ignore
+            }
+            return id;
+        }
     }
 }
