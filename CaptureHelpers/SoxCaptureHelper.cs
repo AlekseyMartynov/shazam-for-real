@@ -49,19 +49,16 @@ class SoxCaptureHelper : ICaptureHelper {
             pendingSox.Start();
             pendingSox.BeginErrorReadLine();
         } catch {
+            pendingSox.Dispose();
             throw new Exception("Failed to start sox (https://en.wikipedia.org/wiki/SoX)");
         }
 
-        if(!pendingSox.HasExited) {
-            Sox = pendingSox;
-            WaveStream = new RawSourceWaveStream(Sox.StandardOutput.BaseStream, fmt);
-            SampleProvider = WaveStream.ToSampleProvider();
-        }
+        Sox = pendingSox;
+        WaveStream = new RawSourceWaveStream(Sox.StandardOutput.BaseStream, fmt);
+        SampleProvider = EternalSilence.AppendTo(WaveStream.ToSampleProvider());
     }
 
     void Sox_Exited(object s, EventArgs e) {
-        SampleProvider = EternalSilence.AppendTo(SampleProvider);
-
         var proc = (Process)s;
 
         var code = proc.ExitCode;
