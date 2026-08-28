@@ -6,7 +6,8 @@
     "prConcurrentLimit": 2,
     "semanticCommits": "enabled",
     "ignoreDeps": [
-        "System.Drawing.Common"
+        "System.Drawing.Common",
+        "System.IO.Hashing"
     ],
     "packageRules": [
         {

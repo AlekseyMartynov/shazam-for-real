@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
 
 namespace Project;
@@ -42,7 +43,7 @@ static class Sig {
                 writer.Write(contentLen);
             }
 
-            var crc = Force.Crc32.Crc32Algorithm.Compute(mem.GetBuffer(), 8, totalLen - 8);
+            var crc = Crc32.HashToUInt32(mem.GetBuffer().AsSpan(8, totalLen - 8));
             mem.Position = 4;
             writer.Write(crc);
 
