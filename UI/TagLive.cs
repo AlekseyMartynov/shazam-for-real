@@ -67,11 +67,11 @@ static class TagLive {
 #if WASAPI_CAPTURE
         return new WasapiCaptureHelper();
 #else
-        if(!OperatingSystem.IsWindows()) {
-            return new SoxCaptureHelper();
+        if(OperatingSystem.IsWindows()) {
+            return new MciCaptureHelper();
         }
 
-        return new MciCaptureHelper();
+        return new SoxCaptureHelper();
 #endif
     }
 

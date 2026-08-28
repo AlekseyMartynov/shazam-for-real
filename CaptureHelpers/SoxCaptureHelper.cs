@@ -38,6 +38,10 @@ class SoxCaptureHelper : ICaptureHelper {
             EnableRaisingEvents = true
         };
 
+        if(OperatingSystem.IsWindows() && Environment.GetEnvironmentVariable("AUDIODRIVER") == null) {
+            pendingSox.StartInfo.Environment["AUDIODRIVER"] = "waveaudio";
+        }
+
         pendingSox.Exited += Sox_Exited;
         pendingSox.ErrorDataReceived += Sox_ErrorDataReceived;
 
