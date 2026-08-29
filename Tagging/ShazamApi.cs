@@ -40,6 +40,8 @@ static class ShazamApi {
         var result = new ShazamResult();
 
         var res = await HTTP.PostAsync(url, postData);
+        res.EnsureSuccessStatusCode();
+
         var json = await res.Content.ReadAsByteArrayAsync();
         var obj = ParseJson(json);
 
