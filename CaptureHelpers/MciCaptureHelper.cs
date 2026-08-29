@@ -86,14 +86,19 @@ partial class MciCaptureHelper : ICaptureHelper {
 
                 for(var i = 0; i < GENERATION_COUNT; i++) {
                     if(GenerationRecording[i]) {
-                        var willStop = StopRequested || DateTime.Now - StartTime > (1 + i) * GENERATION_STEP;
+                        var fastStop = StopRequested || Exception != null;
+                        var willStop = fastStop || DateTime.Now - StartTime > (1 + i) * GENERATION_STEP;
 
                         if(willStop) {
                             var alias = GetAlias(i);
 
-                            if(!StopRequested) {
-                                MciSend("save", alias, TEMP_FILE_PATH);
-                                TempFileToSampleProvider();
+                            if(!fastStop) {
+                                try {
+                                    MciSend("save", alias, TEMP_FILE_PATH);
+                                    TempFileToSampleProvider();
+                                } catch(Exception x) {
+                                    Exception ??= x;
+                                }
                             }
 
                             MciSend("close", alias);
