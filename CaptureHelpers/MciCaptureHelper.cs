@@ -13,7 +13,6 @@ partial class MciCaptureHelper : ICaptureHelper {
     static readonly Lock SYNC = new();
     static readonly int GENERATION_COUNT = 3;
     static readonly TimeSpan GENERATION_STEP = TimeSpan.FromSeconds(4);
-    static readonly string TEMP_FILE_PATH = Path.Combine(Path.GetTempPath(), "shazam-for-real-tmp.wav");
 
     readonly bool[] GenerationRecording = new bool[GENERATION_COUNT];
     readonly List<IDisposable> PendingDispose = [];
@@ -35,9 +34,6 @@ partial class MciCaptureHelper : ICaptureHelper {
 
         foreach(var disposable in PendingDispose)
             disposable.Dispose();
-
-        if(File.Exists(TEMP_FILE_PATH))
-            File.Delete(TEMP_FILE_PATH);
     }
 
     public bool Live => true;
@@ -91,11 +87,13 @@ partial class MciCaptureHelper : ICaptureHelper {
 
                         if(willStop) {
                             var alias = GetAlias(i);
+                            var tempFilePath = default(string);
 
                             if(!fastStop) {
+                                tempFilePath = Path.GetTempFileName();
                                 try {
-                                    MciSend("save", alias, TEMP_FILE_PATH);
-                                    TempFileToSampleProvider();
+                                    MciSend("save", alias, tempFilePath);
+                                    TempFileToSampleProvider(tempFilePath);
                                 } catch(Exception x) {
                                     Exception ??= x;
                                 }
@@ -103,6 +101,10 @@ partial class MciCaptureHelper : ICaptureHelper {
 
                             MciSend("close", alias);
                             GenerationRecording[i] = false;
+
+                            if(tempFilePath != default) {
+                                File.Delete(tempFilePath);
+                            }
                         }
                     }
 
@@ -119,9 +121,9 @@ partial class MciCaptureHelper : ICaptureHelper {
         }
     }
 
-    void TempFileToSampleProvider() {
-        // Buffer into memory because temp file will be overwritten
-        var stream = WithPendingDispose(new MemoryStream(File.ReadAllBytes(TEMP_FILE_PATH)));
+    void TempFileToSampleProvider(string filePath) {
+        // Buffer into memory because temp file will be deleted
+        var stream = WithPendingDispose(new MemoryStream(File.ReadAllBytes(filePath)));
         var reader = WithPendingDispose(new WaveFileReader(stream));
         SampleProvider = reader.ToSampleProvider();
     }
