@@ -11,9 +11,9 @@ static class Interactive {
         if(!ConsoleHelper.IsRedirected)
             PrintHotkeys();
 
-#if WASAPI_CAPTURE
-        WasapiLoopbackHelper.Set(false);
-#endif
+        if(IsSourceSwitchEnabled()) {
+            WasapiLoopbackHelper.Set(false);
+        }
 
         while(true) {
             var key = Char.ToLower(ConsoleHelper.ReadKey());
@@ -21,12 +21,10 @@ static class Interactive {
             if(key == 'q' || key == '\0')
                 break;
 
-#if WASAPI_CAPTURE
-            if(key == 's') {
+            if(key == 's' && IsSourceSwitchEnabled()) {
                 WasapiLoopbackHelper.Toggle();
                 continue;
             }
-#endif
 
             if(key == ' ') {
                 await TagLive.RunAsync(false);
@@ -41,13 +39,14 @@ static class Interactive {
     }
 
     static void PrintHotkeys() {
-        Console.WriteLine(String.Join(", ",
-            "SPACE - tag",
-            "A - auto",
-#if WASAPI_CAPTURE
-            "S - source",
-#endif
-            "Q - quit"
-        ));
+        Console.Write("SPACE - tag, A - auto, ");
+        if(IsSourceSwitchEnabled()) {
+            Console.Write("S - source, ");
+        }
+        Console.WriteLine("Q - quit");
+    }
+
+    static bool IsSourceSwitchEnabled() {
+        return !ConsoleHelper.IsRedirected && OperatingSystem.IsWindows();
     }
 }
