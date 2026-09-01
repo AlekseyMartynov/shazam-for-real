@@ -1,45 +1,44 @@
-﻿#if WASAPI_CAPTURE
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 
 namespace Project;
 
+[SupportedOSPlatform("windows")]
 class WasapiCaptureHelper : ICaptureHelper {
-    readonly WasapiCapture Capture;
-    readonly BufferedWaveProvider CaptureBuf;
-    readonly MediaFoundationResampler Resampler;
+    readonly WasapiRecorder Recorder;
+    readonly CaptureBuffer CaptureBuffer;
 
     public WasapiCaptureHelper() {
-        Capture = WasapiLoopbackHelper.Loopback ? new WasapiLoopbackCapture() : new WasapiCapture();
-        CaptureBuf = new BufferedWaveProvider(Capture.WaveFormat) { ReadFully = false };
-        Resampler = new MediaFoundationResampler(CaptureBuf, ICaptureHelper.WAVE_FORMAT);
+        var builder = new WasapiRecorderBuilder().WithFormat(ICaptureHelper.WAVE_FORMAT);
+        if(WasapiLoopbackHelper.Loopback) {
+            builder = builder.WithLoopbackCapture();
+        }
+        Recorder = builder.Build();
+        CaptureBuffer = new();
     }
 
     public void Dispose() {
-        Resampler.Dispose();
-        Capture.Dispose();
+        CaptureBuffer.Stop();
+        Recorder.Dispose();
     }
 
 
     public bool Live => true;
-    public ISampleProvider SampleProvider { get; private set; }
+    public ISampleProvider SampleProvider => CaptureBuffer.SampleProvider;
     public Exception Exception { get; private set; }
 
     public void Start() {
-        Capture.DataAvailable += (s, e) => {
-            CaptureBuf.AddSamples(e.Buffer, 0, e.BytesRecorded);
+        Recorder.DataAvailable += (buffer, _, _, _) => {
+            CaptureBuffer.AddRange(buffer);
         };
 
-        Capture.RecordingStopped += (s, e) => {
+        Recorder.RecordingStopped += (s, e) => {
             Exception = e.Exception;
         };
 
-        Capture.StartRecording();
-
-        SampleProvider = Resampler.ToSampleProvider();
+        Recorder.StartRecording();
     }
 }
-#endif

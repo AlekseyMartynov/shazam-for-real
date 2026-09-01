@@ -64,15 +64,15 @@ static class TagLive {
     }
 
     static ICaptureHelper CreateCaptureHelper() {
-#if WASAPI_CAPTURE
-        return new WasapiCaptureHelper();
-#else
         if(OperatingSystem.IsWindows()) {
+#if WASAPI_CAPTURE
+            return new WasapiCaptureHelper();
+#else
             return new MciCaptureHelper();
+#endif
         }
 
         return new SoxCaptureHelper();
-#endif
     }
 
 }
