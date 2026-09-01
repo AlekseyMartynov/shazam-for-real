@@ -3,15 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Project;
 
 class SoxCaptureHelper : ICaptureHelper {
+    readonly CaptureBuffer CaptureBuffer = new();
+
     Process Sox;
-    WaveStream WaveStream;
 
     public void Dispose() {
-        WaveStream?.Dispose();
+        CaptureBuffer.Stop();
 
         if(Sox != null) {
             Sox.Kill();
@@ -20,7 +22,7 @@ class SoxCaptureHelper : ICaptureHelper {
     }
 
     public bool Live => true;
-    public ISampleProvider SampleProvider { get; private set; }
+    public ISampleProvider SampleProvider => CaptureBuffer.SampleProvider;
     public Exception Exception { get; private set; }
 
 
@@ -53,9 +55,15 @@ class SoxCaptureHelper : ICaptureHelper {
             throw new Exception("Failed to start sox (https://en.wikipedia.org/wiki/SoX)");
         }
 
+        Task.Run(async delegate {
+            try {
+                await CaptureBuffer.ConsumeStreamAsync(pendingSox.StandardOutput.BaseStream);
+            } catch(Exception x) {
+                Exception = x;
+            }
+        });
+
         Sox = pendingSox;
-        WaveStream = new RawSourceWaveStream(Sox.StandardOutput.BaseStream, fmt);
-        SampleProvider = EternalSilence.AppendTo(WaveStream.ToSampleProvider());
     }
 
     void Sox_Exited(object s, EventArgs e) {
