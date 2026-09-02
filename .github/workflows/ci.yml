@@ -47,7 +47,7 @@ jobs:
       matrix:
         include:
         - { os: windows-latest, rid: win-x64 }
-        - { os: windows-latest, rid: win-arm64 }
+        - { os: windows-11-arm, rid: win-arm64 }
         - { os: ubuntu-latest, rid: linux-x64 }
         - { os: ubuntu-24.04-arm, rid: linux-arm64 }
         - { os: macos-latest, rid: osx-x64 }
@@ -72,10 +72,10 @@ jobs:
 
     # Test with file
 
-    - if: endsWith(matrix.rid, '-x64') || matrix.rid == 'linux-arm64'
+    - if: startsWith(matrix.rid, 'win-') || endsWith(matrix.rid, '-x64') || matrix.rid == 'linux-arm64'
       run: ${{ env.OUT_BIN }} ${{ env.TEST_FILE }} > test-out
 
-    - if: matrix.rid == 'win-x64'
+    - if: startsWith(matrix.rid, 'win-')
       run: findstr ${{ env.TEST_TRACK_SLUG }} test-out
 
     - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64' || matrix.rid == 'osx-x64'
@@ -94,10 +94,10 @@ jobs:
 
     # Test with virtual device (Win)
 
-    - if: matrix.rid == 'win-x64'
+    - if: startsWith(matrix.rid, 'win-')
       uses: AlekseyMartynov/action-vbcable-win@main
 
-    - if: matrix.rid == 'win-x64'
+    - if: startsWith(matrix.rid, 'win-')
       run: |
         choco install ffmpeg -y --no-progress
         Start-Process 'ffplay' '-loop 0 ${{ env.TEST_FILE }}'
