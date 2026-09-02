@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Project;
@@ -18,6 +19,8 @@ static class ShazamApi {
     }
 
     public static async Task<ShazamResult> SendRequestAsync(string tagId, int samplems, byte[] sig) {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
         using var payloadStream = new MemoryStream();
         using var payloadWriter = new Utf8JsonWriter(payloadStream);
 
@@ -33,19 +36,29 @@ static class ShazamApi {
         payloadWriter.WriteEndObject();
         payloadWriter.Flush();
 
-        var url = "https://amp.shazam.com/match/v1/en/" + COUNTRY + "/android/" + INSTALLATION_ID + "/" + tagId;
-        var postData = new ByteArrayContent(payloadStream.GetBuffer(), 0, (int)payloadStream.Length);
-        postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        using var req = new HttpRequestMessage {
+            Method = HttpMethod.Post,
+            RequestUri = new($"https://amp.shazam.com/match/v1/en/{COUNTRY}/android/{INSTALLATION_ID}/{tagId}"),
+            Content = new ByteArrayContent(payloadStream.GetBuffer(), 0, (int)payloadStream.Length) {
+                Headers = {
+                    ContentType = new MediaTypeHeaderValue("application/json")
+                }
+            }
+        };
 
         var result = new ShazamResult();
 
-        var res = await HTTP.PostAsync(url, postData);
-        res.EnsureSuccessStatusCode();
+        try {
+            using var res = await HTTP.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
+            res.EnsureSuccessStatusCode();
 
-        var json = await res.Content.ReadAsByteArrayAsync();
-        var obj = ParseJson(json);
+            var json = await res.Content.ReadAsByteArrayAsync(timeout.Token);
+            var obj = ParseJson(json);
 
-        PopulateResult(obj, result);
+            PopulateResult(obj, result);
+        } catch(OperationCanceledException) when(timeout.IsCancellationRequested) {
+            throw new TimeoutException();
+        }
 
         return result;
     }
