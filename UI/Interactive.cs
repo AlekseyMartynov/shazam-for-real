@@ -27,6 +27,7 @@ static class Interactive {
             }
 
             if(key == ' ') {
+                ConsoleHelper.Unstick();
                 await TagLive.RunAsync(false);
                 continue;
             }

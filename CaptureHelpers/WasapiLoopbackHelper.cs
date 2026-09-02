@@ -10,8 +10,9 @@ static class WasapiLoopbackHelper {
     public static void Set(bool loopback) {
         Loopback = loopback;
 
-        Console.Write("Source: ");
-        Console.WriteLine(loopback ? "Loopback device" : "Recording device");
+        if(!ConsoleHelper.IsRedirected) {
+            ConsoleHelper.WriteStickyLine("Source: " + (loopback ? "Loopback" : "Default") + " device");
+        }
     }
 
     public static void Toggle() {

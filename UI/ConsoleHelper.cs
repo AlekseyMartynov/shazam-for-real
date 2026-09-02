@@ -5,9 +5,10 @@ using System.Linq;
 namespace Project;
 
 static class ConsoleHelper {
+    static int StickyTop = -1;
 
     static ConsoleHelper() {
-        IsRedirected = Console.IsInputRedirected || Console.IsOutputRedirected;
+        IsRedirected = Console.IsInputRedirected || Console.IsOutputRedirected || Console.IsErrorRedirected;
     }
 
     public static bool IsRedirected { get; private set; }
@@ -25,13 +26,28 @@ static class ConsoleHelper {
             return;
 
         Console.CursorLeft = 0;
-        Console.Write(new String(' ', Console.WindowWidth - 1));
+        WriteFullWidth(default);
         Console.CursorLeft = 0;
     }
 
     public static void WriteTime(TimeSpan time) {
         Console.Write(time.ToString(@"hh\:mm\:ss"));
         Console.Write(" ");
+    }
+
+    public static void WriteStickyLine(string text) {
+        if(!IsRedirected && StickyTop > -1) {
+            Console.SetCursorPosition(0, StickyTop);
+        }
+        WriteFullWidth(text);
+        Console.WriteLine();
+        if(!IsRedirected && StickyTop < 0) {
+            StickyTop = Console.CursorTop - 1;
+        }
+    }
+
+    public static void Unstick() {
+        StickyTop = -1;
     }
 
     public static char ReadKey() {
@@ -50,7 +66,12 @@ static class ConsoleHelper {
         while(Console.KeyAvailable) {
             Console.ReadKey(true);
         }
-        return Console.ReadKey(true).KeyChar;
+        while(true) {
+            var info = Console.ReadKey(true);
+            if(info.KeyChar != 0) {
+                return info.KeyChar;
+            }
+        }
     }
 
     static char ReadKeyFromStdIn() {
@@ -67,5 +88,17 @@ static class ConsoleHelper {
                     break;
             }
         }
+    }
+
+    static void WriteFullWidth(ReadOnlySpan<char> text) {
+        var full = (stackalloc char[Console.WindowWidth - 1]);
+        full.Fill(' ');
+        text[..Math.Min(text.Length, full.Length)].CopyTo(full);
+#if DEBUG
+        if(full.ContainsAnyInRange('\0', '\x19')) {
+            throw new InvalidOperationException();
+        }
+#endif
+        Console.Write(full);
     }
 }
