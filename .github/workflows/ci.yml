@@ -50,8 +50,8 @@ jobs:
         - { os: windows-11-arm, rid: win-arm64 }
         - { os: ubuntu-latest, rid: linux-x64 }
         - { os: ubuntu-24.04-arm, rid: linux-arm64 }
-        - { os: macos-latest, rid: osx-x64 }
-        - { os: macos-latest, rid: osx-arm64 }
+        - { os: macos-26-intel, rid: osx-x64 }
+        - { os: macos-26, rid: osx-arm64 }
 
     env:
       OUT_DIR: ./bin/Release/net10.0/${{ matrix.rid }}/native
@@ -72,13 +72,12 @@ jobs:
 
     # Test with file
 
-    - if: startsWith(matrix.rid, 'win-') || endsWith(matrix.rid, '-x64') || matrix.rid == 'linux-arm64'
-      run: ${{ env.OUT_BIN }} ${{ env.TEST_FILE }} > test-out
+    - run: ${{ env.OUT_BIN }} ${{ env.TEST_FILE }} > test-out
 
     - if: startsWith(matrix.rid, 'win-')
       run: findstr ${{ env.TEST_TRACK_SLUG }} test-out
 
-    - if: matrix.rid == 'linux-x64' || matrix.rid == 'linux-arm64' || matrix.rid == 'osx-x64'
+    - if: (!startsWith(matrix.rid, 'win-'))
       run: grep ${{ env.TEST_TRACK_SLUG }} test-out
 
     # Test with virtual device (Linux)
