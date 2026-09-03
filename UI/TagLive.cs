@@ -14,7 +14,7 @@ static class TagLive {
         while(true) {
             ConsoleHelper.WriteProgress("Listening... ");
 
-            var startTime = DateTime.Now;
+            var startTime = DateTimeOffset.Now;
 
             try {
                 using var captureHelper = CreateCaptureHelper();
@@ -50,9 +50,10 @@ static class TagLive {
 
             ConsoleHelper.WriteProgress("Idle... ");
 
-            var nextStartTime = startTime + TimeSpan.FromSeconds(15);
-            while(DateTime.Now < nextStartTime)
-                await Task.Delay(100);
+            var delay = startTime.AddSeconds(15) - DateTimeOffset.Now;
+            if(delay > TimeSpan.Zero) {
+                await Task.Delay(delay);
+            }
         }
     }
 
