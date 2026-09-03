@@ -29,15 +29,19 @@ static class CaptureAndTag {
                 continue;
             }
 
-            analysis.AddChunk(CHUNK);
+            var isTimeout = readChunkResult == ReadChunkResult.Timeout;
 
-            if(analysis.ProcessedMs >= retryMs) {
+            if(!isTimeout) {
+                analysis.AddChunk(CHUNK);
+            }
+
+            if(analysis.ProcessedMs >= retryMs || isTimeout) {
                 //new Painter(analysis, finder).Paint("c:/temp/spectro.png");
                 //new Synthback(analysis, finder).Synth("c:/temp/synthback.raw");
 
                 var sigBytes = Sig.Write(Analysis.SAMPLE_RATE, analysis.ProcessedSamples, finder);
                 var result = await ShazamApi.SendRequestAsync(tagId, analysis.ProcessedMs, sigBytes);
-                if(result.Success)
+                if(result.Success || isTimeout)
                     return result;
 
                 retryMs = result.RetryMs;
@@ -51,6 +55,7 @@ static class CaptureAndTag {
         var sampleProvider = captureHelper.SampleProvider;
         var offset = 0;
         var expectedCount = CHUNK.Length;
+        var lastChunkTick = Environment.TickCount64;
 
         while(true) {
             if(captureHelper.Exception != null)
@@ -60,6 +65,15 @@ static class CaptureAndTag {
                 return ReadChunkResult.SampleProviderChanged;
 
             var actualCount = sampleProvider.Read(CHUNK.AsSpan(offset, expectedCount));
+
+            if(actualCount > 0) {
+                lastChunkTick = Environment.TickCount64;
+            } else if(Environment.TickCount64 - lastChunkTick > 5000) {
+                // Added primarily for WASAPI Loopback
+                // which only receives data when something is actually playing
+                // https://github.com/PortAudio/portaudio/issues/935
+                return ReadChunkResult.Timeout;
+            }
 
             if(actualCount == expectedCount)
                 return ReadChunkResult.OK;
@@ -77,6 +91,7 @@ static class CaptureAndTag {
     enum ReadChunkResult {
         OK,
         SampleProviderChanged,
-        EOF
+        EOF,
+        Timeout
     }
 }
