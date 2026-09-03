@@ -36,13 +36,23 @@ static class ConsoleHelper {
     }
 
     public static void WriteStickyLine(string text) {
-        if(!IsRedirected && StickyTop > -1) {
-            Console.SetCursorPosition(0, StickyTop);
-        }
-        WriteFullWidth(text);
-        Console.WriteLine();
-        if(!IsRedirected && StickyTop < 0) {
-            StickyTop = Console.CursorTop - 1;
+        if(IsRedirected) {
+            Console.WriteLine(text);
+        } else {
+            if(StickyTop > -1) {
+                try {
+                    Console.SetCursorPosition(0, StickyTop);
+                } catch {
+                    // Console buffer shrank or other issue
+                    // Drop stale position
+                    StickyTop = -1;
+                }
+            }
+            WriteFullWidth(text);
+            Console.WriteLine();
+            if(StickyTop < 0) {
+                StickyTop = Console.CursorTop - 1;
+            }
         }
     }
 
@@ -91,7 +101,7 @@ static class ConsoleHelper {
     }
 
     static void WriteFullWidth(ReadOnlySpan<char> text) {
-        var full = (stackalloc char[Console.WindowWidth - 1]);
+        var full = (stackalloc char[Math.Max(0, Console.WindowWidth - 1)]);
         full.Fill(' ');
         text[..Math.Min(text.Length, full.Length)].CopyTo(full);
 #if DEBUG
