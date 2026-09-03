@@ -66,6 +66,12 @@ static class CaptureAndTag {
 
             var actualCount = sampleProvider.Read(CHUNK.AsSpan(offset, expectedCount));
 
+            if(actualCount == expectedCount)
+                return ReadChunkResult.OK;
+
+            if(!captureHelper.Live)
+                return ReadChunkResult.EOF;
+
             if(actualCount > 0) {
                 lastChunkTick = Environment.TickCount64;
             } else if(Environment.TickCount64 - lastChunkTick > 5000) {
@@ -74,12 +80,6 @@ static class CaptureAndTag {
                 // https://github.com/PortAudio/portaudio/issues/935
                 return ReadChunkResult.Timeout;
             }
-
-            if(actualCount == expectedCount)
-                return ReadChunkResult.OK;
-
-            if(!captureHelper.Live)
-                return ReadChunkResult.EOF;
 
             offset += actualCount;
             expectedCount -= actualCount;
