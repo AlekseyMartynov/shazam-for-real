@@ -18,7 +18,6 @@ static class TagLive {
 
             try {
                 using var captureHelper = CreateCaptureHelper();
-                captureHelper.Start();
 
                 var result = await CaptureAndTag.RunAsync(captureHelper);
 
@@ -64,7 +63,7 @@ static class TagLive {
         }
     }
 
-    static ICaptureHelper CreateCaptureHelper() {
+    static CaptureHelper CreateCaptureHelper() {
         if(OperatingSystem.IsWindows()) {
             return new WasapiCaptureHelper();
         }

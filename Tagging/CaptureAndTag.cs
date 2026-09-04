@@ -10,7 +10,7 @@ namespace Project;
 static class CaptureAndTag {
     static readonly float[] CHUNK = new float[Analysis.CHUNK_SIZE];
 
-    public static async Task<ShazamResult> RunAsync(ICaptureHelper captureHelper) {
+    public static async Task<ShazamResult> RunAsync(CaptureHelper captureHelper) {
         var analysis = new Analysis();
         var finder = new PeakFinder(analysis);
 
@@ -22,12 +22,6 @@ static class CaptureAndTag {
 
             if(readChunkResult == ReadChunkResult.EOF)
                 return null;
-
-            if(readChunkResult == ReadChunkResult.SampleProviderChanged) {
-                analysis = new Analysis();
-                finder = new PeakFinder(analysis);
-                continue;
-            }
 
             var isTimeout = readChunkResult == ReadChunkResult.Timeout;
 
@@ -51,7 +45,7 @@ static class CaptureAndTag {
         }
     }
 
-    static async Task<ReadChunkResult> ReadChunkAsync(ICaptureHelper captureHelper) {
+    static async Task<ReadChunkResult> ReadChunkAsync(CaptureHelper captureHelper) {
         var sampleProvider = captureHelper.SampleProvider;
         var offset = 0;
         var expectedCount = CHUNK.Length;
@@ -60,9 +54,6 @@ static class CaptureAndTag {
         while(true) {
             if(captureHelper.Exception != null)
                 ExceptionDispatchInfo.Capture(captureHelper.Exception).Throw();
-
-            if(captureHelper.SampleProvider != sampleProvider)
-                return ReadChunkResult.SampleProviderChanged;
 
             var actualCount = sampleProvider.Read(CHUNK.AsSpan(offset, expectedCount));
 
@@ -90,7 +81,6 @@ static class CaptureAndTag {
 
     enum ReadChunkResult {
         OK,
-        SampleProviderChanged,
         EOF,
         Timeout
     }

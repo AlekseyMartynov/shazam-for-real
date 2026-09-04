@@ -31,7 +31,7 @@ class CaptureBuffer {
     }
 
     public CaptureBuffer() {
-        WaveBuffer = new(ICaptureHelper.WAVE_FORMAT, MaxDuration) {
+        WaveBuffer = new(CaptureHelper.WAVE_FORMAT, MaxDuration) {
             ReadFully = false
         };
         RemainingCount = WaveBuffer.BufferLength;
