@@ -55,7 +55,7 @@ static class CaptureAndTag {
         var sampleProvider = captureHelper.SampleProvider;
         var offset = 0;
         var expectedCount = CHUNK.Length;
-        var lastChunkTick = Environment.TickCount64;
+        var lastDataTick = Environment.TickCount64;
 
         while(true) {
             if(captureHelper.Exception != null)
@@ -73,8 +73,8 @@ static class CaptureAndTag {
                 return ReadChunkResult.EOF;
 
             if(actualCount > 0) {
-                lastChunkTick = Environment.TickCount64;
-            } else if(Environment.TickCount64 - lastChunkTick > 5000) {
+                lastDataTick = Environment.TickCount64;
+            } else if(Environment.TickCount64 - lastDataTick > 5000) {
                 // Added primarily for WASAPI Loopback
                 // which only receives data when something is actually playing
                 // https://github.com/PortAudio/portaudio/issues/935
