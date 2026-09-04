@@ -29,7 +29,7 @@ class CaptureBuffer {
 
     public CaptureBuffer()
         : this(CaptureHelper.WAVE_FORMAT, TimeSpan.FromSeconds(12)) {
-        // 12 sec is max 'retryMs' returned by Shazam API
+        // 12 sec is max 'retryInMilliseconds' returned by Shazam API
     }
 
     public CaptureBuffer(WaveFormat waveFormat, TimeSpan maxDuration) {
