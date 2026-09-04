@@ -11,23 +11,18 @@ namespace Project.Test;
 public class CaptureBufferTests {
     const int TestSampleRate = 123;
     const short PositiveHalfShort = short.MaxValue / 2;
+    const float ReadSentinel = 0xdeadbeef;
 
-    readonly float[] ReadBuf = new float[10 * TestSampleRate];
-
-    [Fact]
+[Fact]
     public void ZeroPadAfterMaxDuration() {
         var captureBuf = CreateCaptureBuffer(1);
-        var sp = captureBuf.SampleProvider;
 
         var firstBatchLen = TestSampleRate - 1;
         Add16BitSamples(captureBuf, PositiveHalfShort, firstBatchLen);
-        Assert.Equal(firstBatchLen, sp.Read(ReadBuf));
+        MustReadExactly(captureBuf, firstBatchLen, 0.5f);
 
         Add16BitSamples(captureBuf, PositiveHalfShort, TestSampleRate - firstBatchLen + 1);
-        Assert.Equal(ReadBuf.Length, sp.Read(ReadBuf));
-
-        Assert.Equal(0.5, ReadBuf[0], precision: 3);
-        Assert.Equal(0, ReadBuf[1], precision: 3);
+        MustReadZeroPadded(captureBuf, 1, 0.5f);
     }
 
     [Fact]
@@ -38,9 +33,7 @@ public class CaptureBufferTests {
         captureBuf.Stop();
         Add16BitSamples(captureBuf, PositiveHalfShort, 1);
 
-        Assert.Equal(ReadBuf.Length, captureBuf.SampleProvider.Read(ReadBuf));
-        Assert.Equal(0.5, ReadBuf[0], precision: 3);
-        Assert.Equal(0, ReadBuf[1], precision: 3);
+        MustReadZeroPadded(captureBuf, 1, 0.5f);
     }
 
     [Fact]
@@ -54,9 +47,7 @@ public class CaptureBufferTests {
 
         Assert.True(sourceStream.Position < sourceStream.Length);
 
-        captureBuf.SampleProvider.Read(ReadBuf);
-        Assert.Equal(0.5, ReadBuf[2 * TestSampleRate - 1], precision: 3);
-        Assert.Equal(0, ReadBuf[2 * TestSampleRate], precision: 3);
+        MustReadZeroPadded(captureBuf, 2 * TestSampleRate, 0.5f);
     }
 
     [Fact]
@@ -71,7 +62,7 @@ public class CaptureBufferTests {
         });
 
         Assert.Null(exception);
-        Assert.Equal(ReadBuf.Length, captureBuf.SampleProvider.Read(ReadBuf));
+        MustReadZeroPadded(captureBuf, 0);
     }
 
     static CaptureBuffer CreateCaptureBuffer(int maxDurationSeconds) {
@@ -92,5 +83,30 @@ public class CaptureBufferTests {
         for(var i = 0; i < sampleCount; i++) {
             writer.Write(sampleValue);
         }
+    }
+
+    static void MustReadExactly(CaptureBuffer captureBuf, int expectedSampleCount, float expectedLastSample = default) {
+        MustReadCore(false, captureBuf, expectedSampleCount, expectedLastSample);
+    }
+
+    static void MustReadZeroPadded(CaptureBuffer captureBuf, int expectedSampleCount, float expectedLastSample = default) {
+        MustReadCore(true, captureBuf, expectedSampleCount, expectedLastSample);
+    }
+
+    static void MustReadCore(bool zeroPadded, CaptureBuffer captureBuf, int expectedSampleCount, float expectedLastSample) {
+        var readBuf = new float[expectedSampleCount + 1];
+        Array.Fill(readBuf, ReadSentinel);
+        Assert.Equal(
+            zeroPadded ? readBuf.Length : expectedSampleCount,
+            captureBuf.SampleProvider.Read(readBuf)
+        );
+        if(expectedSampleCount > 0) {
+            Assert.Equal(expectedLastSample, readBuf[expectedSampleCount - 1], precision: 3);
+        }
+        Assert.Equal(
+            zeroPadded ? 0 : ReadSentinel,
+            readBuf[expectedSampleCount]
+        );
+
     }
 }
