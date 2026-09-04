@@ -23,12 +23,6 @@ static class CaptureAndTag {
             if(readChunkResult == ReadChunkResult.EOF)
                 return null;
 
-            if(readChunkResult == ReadChunkResult.SampleProviderChanged) {
-                analysis = new Analysis();
-                finder = new PeakFinder(analysis);
-                continue;
-            }
-
             var isTimeout = readChunkResult == ReadChunkResult.Timeout;
 
             if(!isTimeout) {
@@ -61,9 +55,6 @@ static class CaptureAndTag {
             if(captureHelper.Exception != null)
                 ExceptionDispatchInfo.Capture(captureHelper.Exception).Throw();
 
-            if(captureHelper.SampleProvider != sampleProvider)
-                return ReadChunkResult.SampleProviderChanged;
-
             var actualCount = sampleProvider.Read(CHUNK.AsSpan(offset, expectedCount));
 
             if(actualCount == expectedCount)
@@ -90,7 +81,6 @@ static class CaptureAndTag {
 
     enum ReadChunkResult {
         OK,
-        SampleProviderChanged,
         EOF,
         Timeout
     }
