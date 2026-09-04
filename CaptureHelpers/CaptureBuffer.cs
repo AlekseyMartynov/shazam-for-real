@@ -9,9 +9,6 @@ using System.Threading.Tasks;
 namespace Project;
 
 class CaptureBuffer {
-    // Max RetryMs
-    static readonly TimeSpan MaxDuration = TimeSpan.FromSeconds(12);
-
     public readonly ISampleProvider SampleProvider;
 
     readonly BufferedWaveProvider WaveBuffer;
@@ -30,8 +27,16 @@ class CaptureBuffer {
         }
     }
 
-    public CaptureBuffer() {
-        WaveBuffer = new(CaptureHelper.WAVE_FORMAT, MaxDuration) {
+    public CaptureBuffer()
+        : this(CaptureHelper.WAVE_FORMAT, TimeSpan.FromSeconds(12)) {
+        // 12 sec is max 'retryInMilliseconds' returned by Shazam API
+    }
+
+    public CaptureBuffer(WaveFormat waveFormat, TimeSpan maxDuration) {
+        Debug.Assert(waveFormat.Encoding == WaveFormatEncoding.Pcm);
+        Debug.Assert(waveFormat.BitsPerSample == 16);
+        Debug.Assert(waveFormat.Channels == 1);
+        WaveBuffer = new(waveFormat, maxDuration) {
             ReadFully = false
         };
         RemainingCount = WaveBuffer.BufferLength;
@@ -39,7 +44,7 @@ class CaptureBuffer {
     }
 
     public async Task ConsumeStreamAsync(Stream stream) {
-        using var memOwner = MemoryPool<byte>.Shared.Rent(Analysis.SAMPLE_RATE / 2);
+        using var memOwner = MemoryPool<byte>.Shared.Rent(WaveBuffer.WaveFormat.SampleRate / 2);
         var mem = memOwner.Memory;
         try {
             while(RemainingCount > 0) {
