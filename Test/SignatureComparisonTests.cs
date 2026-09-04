@@ -78,7 +78,6 @@ namespace Project.Test {
             var finder = new PeakFinder(analysis, interpolation);
 
             using var captureHelper = new FileCaptureHelper(path);
-            captureHelper.Start();
 
             var sampleProvider = AddPadding(captureHelper.SampleProvider);
             var chunk = (stackalloc float[Analysis.CHUNK_SIZE]);

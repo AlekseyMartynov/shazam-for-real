@@ -1,5 +1,4 @@
-﻿using NAudio.Wave;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,27 +6,26 @@ using System.Threading.Tasks;
 
 namespace Project;
 
-class SoxCaptureHelper : ICaptureHelper {
+sealed class SoxCaptureHelper : CaptureHelper {
     readonly CaptureBuffer CaptureBuffer = new();
 
-    Process Sox;
+    readonly Process Sox;
 
-    public void Dispose() {
-        CaptureBuffer.Stop();
-
-        if(Sox != null) {
-            Sox.Kill();
-            Sox.Dispose();
-        }
+    public SoxCaptureHelper() {
+        Sox = StartSox();
+        SampleProvider = CaptureBuffer.SampleProvider;
     }
 
-    public bool Live => true;
-    public ISampleProvider SampleProvider => CaptureBuffer.SampleProvider;
-    public Exception Exception { get; private set; }
+    public override void Dispose() {
+        CaptureBuffer.Stop();
+        Sox.Kill();
+        Sox.Dispose();
+    }
 
+    public override bool Live => true;
 
-    public void Start() {
-        var fmt = ICaptureHelper.WAVE_FORMAT;
+    Process StartSox() {
+        var fmt = WAVE_FORMAT;
 
         var pendingSox = new Process {
             StartInfo = new ProcessStartInfo {
@@ -63,7 +61,7 @@ class SoxCaptureHelper : ICaptureHelper {
             }
         });
 
-        Sox = pendingSox;
+        return pendingSox;
     }
 
     void Sox_Exited(object s, EventArgs e) {

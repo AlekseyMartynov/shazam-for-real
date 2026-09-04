@@ -26,7 +26,6 @@ static class TagFile {
 
     public static async Task RunAsync(string filePath, TimeSpan startTime, bool tillEnd) {
         using var captureHelper = new FileCaptureHelper(filePath, startTime);
-        captureHelper.Start();
 
         while(true) {
             captureHelper.SkipTo(startTime);

@@ -7,30 +7,29 @@ using System.Runtime.Versioning;
 namespace Project;
 
 [SupportedOSPlatform("windows")]
-class WasapiCaptureHelper : ICaptureHelper {
+sealed class WasapiCaptureHelper : CaptureHelper {
     readonly WasapiRecorder Recorder;
     readonly CaptureBuffer CaptureBuffer;
 
     public WasapiCaptureHelper() {
-        var builder = new WasapiRecorderBuilder().WithFormat(ICaptureHelper.WAVE_FORMAT);
+        var builder = new WasapiRecorderBuilder().WithFormat(WAVE_FORMAT);
         if(WasapiLoopbackHelper.Loopback) {
             builder = builder.WithLoopbackCapture();
         }
         Recorder = builder.Build();
         CaptureBuffer = new();
+        SampleProvider = CaptureBuffer.SampleProvider;
+        Start();
     }
 
-    public void Dispose() {
+    public override void Dispose() {
         CaptureBuffer.Stop();
         Recorder.Dispose();
     }
 
+    public override bool Live => true;
 
-    public bool Live => true;
-    public ISampleProvider SampleProvider => CaptureBuffer.SampleProvider;
-    public Exception Exception { get; private set; }
-
-    public void Start() {
+    void Start() {
         Recorder.DataAvailable += (buffer, _, _, _) => {
             CaptureBuffer.AddRange(buffer);
         };

@@ -9,36 +9,23 @@ using System.IO;
 
 namespace Project;
 
-class FileCaptureHelper : ICaptureHelper {
-    readonly string FilePath;
-    readonly TimeSpan StartTime;
-
-    WaveStream WaveStream;
+sealed class FileCaptureHelper : CaptureHelper {
+    readonly WaveStream WaveStream;
 
     public FileCaptureHelper(string filePath, TimeSpan startTime = default) {
-        FilePath = filePath;
-        StartTime = startTime;
+        WaveStream = CreateWaveStream(filePath);
+        WaveStream.CurrentTime = startTime;
+
+        SampleProvider = CreateSampleProvider(WaveStream);
     }
 
-    public void Dispose() {
-        WaveStream?.Dispose();
+    public override void Dispose() {
+        WaveStream.Dispose();
     }
 
-    public TimeSpan CurrentTime => WaveStream != null ? WaveStream.CurrentTime : TimeSpan.Zero;
+    public TimeSpan CurrentTime => WaveStream.CurrentTime;
 
-    public bool Live => false;
-    public ISampleProvider SampleProvider { get; private set; }
-    public Exception Exception => null;
-
-    public void Start() {
-        WaveStream = CreateWaveStream();
-        WaveStream.CurrentTime = StartTime;
-
-        SampleProvider = WaveStream.ToSampleProvider().ToMono();
-
-        if(SampleProvider.WaveFormat.SampleRate != Analysis.SAMPLE_RATE)
-            SampleProvider = new WdlResamplingSampleProvider(SampleProvider, Analysis.SAMPLE_RATE);
-    }
+    public override bool Live => false;
 
     public void SkipTo(TimeSpan time) {
         var len = Analysis.SAMPLE_RATE / 2;
@@ -55,13 +42,20 @@ class FileCaptureHelper : ICaptureHelper {
         }
     }
 
-    WaveStream CreateWaveStream() {
-        var ext = Path.GetExtension(FilePath).ToLower();
+    static WaveStream CreateWaveStream(string filePath) {
+        var ext = Path.GetExtension(filePath).ToLower();
         return ext switch {
-            ".mp3" => new Mp3FileReaderBase(FilePath, fmt => new Mp3FrameDecompressor(fmt)),
-            ".wav" => new WaveFileReader(FilePath),
+            ".mp3" => new Mp3FileReaderBase(filePath, fmt => new Mp3FrameDecompressor(fmt)),
+            ".wav" => new WaveFileReader(filePath),
             _ => throw new NotSupportedException($"Extension '{ext}' not supported"),
         };
     }
 
+    static ISampleProvider CreateSampleProvider(WaveStream wave) {
+        var result = wave.ToSampleProvider().ToMono();
+        if(result.WaveFormat.SampleRate != Analysis.SAMPLE_RATE) {
+            result = new WdlResamplingSampleProvider(result, Analysis.SAMPLE_RATE);
+        }
+        return result;
+    }
 }

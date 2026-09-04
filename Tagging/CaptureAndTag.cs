@@ -10,7 +10,7 @@ namespace Project;
 static class CaptureAndTag {
     static readonly float[] CHUNK = new float[Analysis.CHUNK_SIZE];
 
-    public static async Task<ShazamResult> RunAsync(ICaptureHelper captureHelper) {
+    public static async Task<ShazamResult> RunAsync(CaptureHelper captureHelper) {
         var analysis = new Analysis();
         var finder = new PeakFinder(analysis);
 
@@ -51,7 +51,7 @@ static class CaptureAndTag {
         }
     }
 
-    static async Task<ReadChunkResult> ReadChunkAsync(ICaptureHelper captureHelper) {
+    static async Task<ReadChunkResult> ReadChunkAsync(CaptureHelper captureHelper) {
         var sampleProvider = captureHelper.SampleProvider;
         var offset = 0;
         var expectedCount = CHUNK.Length;
