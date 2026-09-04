@@ -13,7 +13,7 @@ public class CaptureBufferTests {
     const short PositiveHalfShort = short.MaxValue / 2;
     const float ReadSentinel = 0xdeadbeef;
 
-[Fact]
+    [Fact]
     public void ZeroPadAfterMaxDuration() {
         var captureBuf = CreateCaptureBuffer(1);
 
