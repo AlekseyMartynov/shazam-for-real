@@ -79,6 +79,35 @@ public class CaptureBufferTests {
         MustReadZeroPadded(captureBuf, 0);
     }
 
+    [Fact]
+    public void Unaligned() {
+        var captureBuf = CreateCaptureBuffer(1);
+        var bytes = MemoryMarshal.AsBytes([
+            PositiveHalfShort,
+            PositiveHalfShort,
+            PositiveHalfShort,
+            PositiveHalfShort,
+            PositiveHalfShort,
+            PositiveHalfShort,
+        ]);
+
+        // !pending, !even
+        captureBuf.AddRange(bytes[..3]);
+        MustReadExactly(captureBuf, 1, 0.5f);
+
+        // pending, even
+        captureBuf.AddRange(bytes[3..7]);
+        MustReadExactly(captureBuf, 2, 0.5f);
+
+        // pending, !even
+        captureBuf.AddRange(bytes[7..10]);
+        MustReadExactly(captureBuf, 2, 0.5f);
+
+        // !pending, even
+        captureBuf.AddRange(bytes[10..12]);
+        MustReadExactly(captureBuf, 1, 0.5f);
+    }
+
     static CaptureBuffer CreateCaptureBuffer(int maxDurationSeconds) {
         return new CaptureBuffer(
             new(TestSampleRate, 1),

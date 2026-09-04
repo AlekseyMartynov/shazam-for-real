@@ -13,6 +13,8 @@ class CaptureBuffer {
 
     readonly BufferedWaveProvider WaveBuffer;
 
+    int PendingByte = -1;
+
     int RemainingCount {
         get;
         set {
@@ -36,6 +38,7 @@ class CaptureBuffer {
         Debug.Assert(waveFormat.Encoding == WaveFormatEncoding.Pcm);
         Debug.Assert(waveFormat.BitsPerSample == 16);
         Debug.Assert(waveFormat.Channels == 1);
+        Debug.Assert(waveFormat.BlockAlign == 2);
         WaveBuffer = new(waveFormat, maxDuration) {
             ReadFully = false
         };
@@ -64,6 +67,30 @@ class CaptureBuffer {
     }
 
     public void AddRange(ReadOnlySpan<byte> bytes) {
+        if(bytes.Length < 1 || RemainingCount < 1) {
+            return;
+        }
+        var even = int.IsEvenInteger(bytes.Length);
+        if(PendingByte < 0) {
+            if(even) {
+                AddAligned(bytes);
+            } else {
+                AddAligned(bytes[..^1]);
+                PendingByte = bytes[^1];
+            }
+        } else {
+            AddAligned([(byte)PendingByte, bytes[0]]);
+            if(even) {
+                AddAligned(bytes[1..^1]);
+                PendingByte = bytes[^1];
+            } else {
+                AddAligned(bytes[1..]);
+                PendingByte = -1;
+            }
+        }
+    }
+
+    void AddAligned(ReadOnlySpan<byte> bytes) {
         if(RemainingCount < bytes.Length) {
             bytes = bytes[..RemainingCount];
         }
