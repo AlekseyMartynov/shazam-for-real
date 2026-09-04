@@ -12,14 +12,15 @@ sealed class WasapiCaptureHelper : CaptureHelper {
     readonly CaptureBuffer CaptureBuffer;
 
     public WasapiCaptureHelper() {
-        var builder = new WasapiRecorderBuilder().WithFormat(WAVE_FORMAT);
-        if(WasapiLoopbackHelper.Loopback) {
-            builder = builder.WithLoopbackCapture();
-        }
-        Recorder = builder.Build();
         CaptureBuffer = new();
         SampleProvider = CaptureBuffer.SampleProvider;
-        Start();
+        Recorder = CreateRecorder();
+        try {
+            Start();
+        } catch {
+            Recorder.Dispose();
+            throw;
+        }
     }
 
     public override void Dispose() {
@@ -28,6 +29,14 @@ sealed class WasapiCaptureHelper : CaptureHelper {
     }
 
     public override bool Live => true;
+
+    static WasapiRecorder CreateRecorder() {
+        var builder = new WasapiRecorderBuilder().WithFormat(WAVE_FORMAT);
+        if(WasapiLoopbackHelper.Loopback) {
+            builder = builder.WithLoopbackCapture();
+        }
+        return builder.Build();
+    }
 
     void Start() {
         Recorder.DataAvailable += (buffer, _, _, _) => {
