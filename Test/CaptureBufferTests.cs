@@ -51,6 +51,20 @@ public class CaptureBufferTests {
     }
 
     [Fact]
+    public async Task ConsumeStreamAsync_Short() {
+        using var sourceStream = new MemoryStream();
+        Add16BitSamples(sourceStream, PositiveHalfShort, TestSampleRate);
+        sourceStream.Position = 0;
+
+        var captureBuf = CreateCaptureBuffer(2);
+        await captureBuf.ConsumeStreamAsync(sourceStream);
+
+        Assert.Equal(sourceStream.Length, sourceStream.Position);
+
+        MustReadZeroPadded(captureBuf, TestSampleRate, 0.5f);
+    }
+
+    [Fact]
     public async Task ConsumeStreamAsync_Disposed() {
         var sourceStream = new MemoryStream();
         sourceStream.Dispose();
