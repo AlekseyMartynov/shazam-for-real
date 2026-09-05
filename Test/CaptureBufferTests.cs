@@ -108,10 +108,35 @@ public class CaptureBufferTests {
         MustReadExactly(captureBuf, 1, 0.5f);
     }
 
-    static CaptureBuffer CreateCaptureBuffer(int maxDurationSeconds) {
+    [Fact]
+    public void Trim_Disabled() {
+        var captureBuf = CreateCaptureBuffer(2, 0);
+        Add16BitSamples(captureBuf, 0, TestSampleRate / 2);
+        MustReadExactly(captureBuf, TestSampleRate / 2);
+    }
+
+    [Fact]
+    public void Trim_Full() {
+        var captureBuf = CreateCaptureBuffer(2, 1);
+        Add16BitSamples(captureBuf, 0, TestSampleRate + 1);
+        Add16BitSamples(captureBuf, PositiveHalfShort, 1);
+        MustReadExactly(captureBuf, 2, 0.5f);
+    }
+
+    [Fact]
+    public void Trim_Partial() {
+        var captureBuf = CreateCaptureBuffer(2, 1);
+        Add16BitSamples(captureBuf, 0, TestSampleRate / 2);
+        Add16BitSamples(captureBuf, PositiveHalfShort, 1); // cancels subsequent trimming
+        Add16BitSamples(captureBuf, 0, 1);
+        MustReadExactly(captureBuf, 2, 0);
+    }
+
+    static CaptureBuffer CreateCaptureBuffer(int maxDurationSeconds, int maxTrimSeconds = 0) {
         return new CaptureBuffer(
             new(TestSampleRate, 1),
-            TimeSpan.FromSeconds(maxDurationSeconds)
+            TimeSpan.FromSeconds(maxDurationSeconds),
+            TimeSpan.FromSeconds(maxTrimSeconds)
         );
     }
 
