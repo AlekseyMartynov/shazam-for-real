@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Project;
@@ -14,6 +15,8 @@ class CaptureBuffer {
     readonly BufferedWaveProvider WaveBuffer;
 
     int PendingByte = -1;
+
+    int RemainingTrim;
 
     int RemainingCount {
         get;
@@ -30,11 +33,11 @@ class CaptureBuffer {
     }
 
     public CaptureBuffer()
-        : this(CaptureHelper.WAVE_FORMAT, TimeSpan.FromSeconds(12)) {
+        : this(CaptureHelper.WAVE_FORMAT, TimeSpan.FromSeconds(12), TimeSpan.FromSeconds(1)) {
         // 12 sec is max 'retryInMilliseconds' returned by Shazam API
     }
 
-    public CaptureBuffer(WaveFormat waveFormat, TimeSpan maxDuration) {
+    public CaptureBuffer(WaveFormat waveFormat, TimeSpan maxDuration, TimeSpan maxTrim) {
         Debug.Assert(waveFormat.Encoding == WaveFormatEncoding.Pcm);
         Debug.Assert(waveFormat.BitsPerSample == 16);
         Debug.Assert(waveFormat.Channels == 1);
@@ -42,8 +45,14 @@ class CaptureBuffer {
         WaveBuffer = new(waveFormat, maxDuration) {
             ReadFully = false
         };
+        RemainingTrim = TimeToBlockAlignedBytes(waveFormat, maxTrim);
         RemainingCount = WaveBuffer.BufferLength;
         SampleProvider = WaveBuffer.ToSampleProvider();
+    }
+
+    static int TimeToBlockAlignedBytes(WaveFormat waveFormat, TimeSpan time) {
+        var byteCount = (int)(time.TotalSeconds * waveFormat.AverageBytesPerSecond);
+        return byteCount - (byteCount % waveFormat.BlockAlign);
     }
 
     public async Task ConsumeStreamAsync(Stream stream) {
@@ -91,6 +100,7 @@ class CaptureBuffer {
     }
 
     void AddAligned(ReadOnlySpan<byte> bytes) {
+        bytes = Trim(bytes);
         if(RemainingCount < bytes.Length) {
             bytes = bytes[..RemainingCount];
         }
@@ -98,6 +108,22 @@ class CaptureBuffer {
             WaveBuffer.AddSamples(bytes);
             RemainingCount -= bytes.Length;
         }
+    }
+
+    ReadOnlySpan<byte> Trim(ReadOnlySpan<byte> bytes) {
+        // Rationale: mic recording starts with ~350ms of silence
+        // which is better to exclude from signature
+        if(RemainingTrim < 1) {
+            return bytes;
+        }
+        var nonSilentPcmIndex = MemoryMarshal.Cast<byte, short>(bytes).IndexOfAnyExceptInRange((short)-1, (short)1);
+        var trimCount = Math.Min(RemainingTrim, nonSilentPcmIndex < 0 ? bytes.Length : 2 * nonSilentPcmIndex);
+        if(nonSilentPcmIndex < 0) {
+            RemainingTrim -= trimCount;
+        } else {
+            RemainingTrim = 0;
+        }
+        return bytes[trimCount..];
     }
 
     public void Stop() {
