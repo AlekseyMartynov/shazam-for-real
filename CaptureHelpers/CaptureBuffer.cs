@@ -53,7 +53,6 @@ class CaptureBuffer {
     static int TimeToBlockAlignedBytes(WaveFormat waveFormat, TimeSpan time) {
         var byteCount = (int)(time.TotalSeconds * waveFormat.AverageBytesPerSecond);
         return byteCount - (byteCount % waveFormat.BlockAlign);
-
     }
 
     public async Task ConsumeStreamAsync(Stream stream) {
