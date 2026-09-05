@@ -126,10 +126,13 @@ public class CaptureBufferTests {
     [Fact]
     public void Trim_Partial() {
         var captureBuf = CreateCaptureBuffer(2, 1);
+
         Add16BitSamples(captureBuf, 0, TestSampleRate / 2);
         Add16BitSamples(captureBuf, PositiveHalfShort, 1); // cancels subsequent trimming
+        MustReadExactly(captureBuf, 1, 0.5f);
+
         Add16BitSamples(captureBuf, 0, 1);
-        MustReadExactly(captureBuf, 2, 0);
+        MustReadExactly(captureBuf, 1, 0);
     }
 
     static CaptureBuffer CreateCaptureBuffer(int maxDurationSeconds, int maxTrimSeconds = 0) {
