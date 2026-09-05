@@ -16,9 +16,9 @@ class CaptureBuffer {
 
     int PendingByte = -1;
 
-    int RemainingTrim;
+    int RemainingTrimBytes;
 
-    int RemainingCount {
+    int RemainingBytes {
         get;
         set {
             if(field != value) {
@@ -45,8 +45,8 @@ class CaptureBuffer {
         WaveBuffer = new(waveFormat, maxDuration) {
             ReadFully = false
         };
-        RemainingTrim = TimeToBlockAlignedBytes(waveFormat, maxTrim);
-        RemainingCount = WaveBuffer.BufferLength;
+        RemainingTrimBytes = TimeToBlockAlignedBytes(waveFormat, maxTrim);
+        RemainingBytes = WaveBuffer.BufferLength;
         SampleProvider = WaveBuffer.ToSampleProvider();
     }
 
@@ -59,7 +59,7 @@ class CaptureBuffer {
         using var memOwner = MemoryPool<byte>.Shared.Rent(WaveBuffer.WaveFormat.SampleRate / 2);
         var mem = memOwner.Memory;
         try {
-            while(RemainingCount > 0) {
+            while(RemainingBytes > 0) {
                 var readLen = await stream.ReadAsync(mem);
                 if(readLen == 0) {
                     break; // end of stream
@@ -76,7 +76,7 @@ class CaptureBuffer {
     }
 
     public void AddRange(ReadOnlySpan<byte> bytes) {
-        if(bytes.IsEmpty || RemainingCount < 1) {
+        if(bytes.IsEmpty || RemainingBytes < 1) {
             return;
         }
         if(PendingByte > -1) {
@@ -97,32 +97,32 @@ class CaptureBuffer {
 
     void AddAligned(ReadOnlySpan<byte> bytes) {
         bytes = Trim(bytes);
-        if(RemainingCount < bytes.Length) {
-            bytes = bytes[..RemainingCount];
+        if(RemainingBytes < bytes.Length) {
+            bytes = bytes[..RemainingBytes];
         }
         if(bytes.Length > 0) {
             WaveBuffer.AddSamples(bytes);
-            RemainingCount -= bytes.Length;
+            RemainingBytes -= bytes.Length;
         }
     }
 
     ReadOnlySpan<byte> Trim(ReadOnlySpan<byte> bytes) {
-        // Rationale: mic recording starts with ~350ms of silence
+        // Rationale: mic recording starts with ~350ms of digital silence
         // which is better to exclude from signature
-        if(RemainingTrim < 1) {
+        if(RemainingTrimBytes < 1) {
             return bytes;
         }
         var nonSilentPcmIndex = MemoryMarshal.Cast<byte, short>(bytes).IndexOfAnyExceptInRange((short)-1, (short)1);
-        var trimCount = Math.Min(RemainingTrim, nonSilentPcmIndex < 0 ? bytes.Length : 2 * nonSilentPcmIndex);
+        var trimCount = Math.Min(RemainingTrimBytes, nonSilentPcmIndex < 0 ? bytes.Length : 2 * nonSilentPcmIndex);
         if(nonSilentPcmIndex < 0) {
-            RemainingTrim -= trimCount;
+            RemainingTrimBytes -= trimCount;
         } else {
-            RemainingTrim = 0;
+            RemainingTrimBytes = 0;
         }
         return bytes[trimCount..];
     }
 
     public void Stop() {
-        RemainingCount = 0;
+        RemainingBytes = 0;
     }
 }
