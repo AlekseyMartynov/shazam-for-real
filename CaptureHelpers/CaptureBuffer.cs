@@ -45,9 +45,15 @@ class CaptureBuffer {
         WaveBuffer = new(waveFormat, maxDuration) {
             ReadFully = false
         };
-        RemainingTrim = (int)maxTrim.TotalSeconds * waveFormat.AverageBytesPerSecond;
+        RemainingTrim = TimeToBlockAlignedBytes(waveFormat, maxTrim);
         RemainingCount = WaveBuffer.BufferLength;
         SampleProvider = WaveBuffer.ToSampleProvider();
+    }
+
+    static int TimeToBlockAlignedBytes(WaveFormat waveFormat, TimeSpan time) {
+        var byteCount = (int)(time.TotalSeconds * waveFormat.AverageBytesPerSecond);
+        return byteCount - (byteCount % waveFormat.BlockAlign);
+
     }
 
     public async Task ConsumeStreamAsync(Stream stream) {
