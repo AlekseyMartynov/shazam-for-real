@@ -67,26 +67,22 @@ class CaptureBuffer {
     }
 
     public void AddRange(ReadOnlySpan<byte> bytes) {
-        if(bytes.Length < 1 || RemainingCount < 1) {
+        if(bytes.IsEmpty || RemainingCount < 1) {
             return;
         }
-        var even = int.IsEvenInteger(bytes.Length);
-        if(PendingByte < 0) {
-            if(even) {
-                AddAligned(bytes);
-            } else {
-                AddAligned(bytes[..^1]);
-                PendingByte = bytes[^1];
-            }
-        } else {
+        if(PendingByte > -1) {
             AddAligned([(byte)PendingByte, bytes[0]]);
-            if(even) {
-                AddAligned(bytes[1..^1]);
-                PendingByte = bytes[^1];
-            } else {
-                AddAligned(bytes[1..]);
-                PendingByte = -1;
+            bytes = bytes[1..];
+            PendingByte = -1;
+            if(bytes.IsEmpty) {
+                return;
             }
+        }
+        if(int.IsEvenInteger(bytes.Length)) {
+            AddAligned(bytes);
+        } else {
+            AddAligned(bytes[..^1]);
+            PendingByte = bytes[^1];
         }
     }
 
