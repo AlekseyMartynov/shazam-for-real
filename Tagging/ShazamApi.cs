@@ -56,8 +56,8 @@ static class ShazamApi {
             var obj = ParseJson(json);
 
             PopulateResult(obj, result);
-        } catch(OperationCanceledException) when(timeout.IsCancellationRequested) {
-            throw new TimeoutException();
+        } catch(OperationCanceledException x) when(timeout.IsCancellationRequested) {
+            throw new TimeoutException("Network timeout", x);
         }
 
         return result;
