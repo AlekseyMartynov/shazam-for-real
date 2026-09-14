@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Project;
@@ -13,6 +14,8 @@ class CaptureBuffer {
     public readonly ISampleProvider SampleProvider;
 
     readonly BufferedWaveProvider WaveBuffer;
+
+    bool Stopped;
 
     int PendingByte = -1;
 
@@ -59,7 +62,7 @@ class CaptureBuffer {
         using var memOwner = MemoryPool<byte>.Shared.Rent(WaveBuffer.WaveFormat.SampleRate / 2);
         var mem = memOwner.Memory;
         try {
-            while(RemainingBytes > 0) {
+            while(!Volatile.Read(ref Stopped) && RemainingBytes > 0) {
                 var readLen = await stream.ReadAsync(mem);
                 if(readLen == 0) {
                     break; // end of stream
@@ -76,7 +79,7 @@ class CaptureBuffer {
     }
 
     public void AddRange(ReadOnlySpan<byte> bytes) {
-        if(bytes.IsEmpty || RemainingBytes < 1) {
+        if(bytes.IsEmpty || Volatile.Read(ref Stopped) || RemainingBytes < 1) {
             return;
         }
         AddRangeCore(bytes);
@@ -127,6 +130,7 @@ class CaptureBuffer {
     }
 
     public void Stop() {
+        Volatile.Write(ref Stopped, true);
         RemainingBytes = 0;
     }
 }
