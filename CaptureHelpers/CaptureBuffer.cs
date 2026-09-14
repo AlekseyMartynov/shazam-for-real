@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Project;
@@ -13,6 +14,8 @@ class CaptureBuffer {
     public readonly ISampleProvider SampleProvider;
 
     readonly BufferedWaveProvider WaveBuffer;
+
+    readonly Lock Lock = new();
 
     int PendingByte = -1;
 
@@ -59,7 +62,12 @@ class CaptureBuffer {
         using var memOwner = MemoryPool<byte>.Shared.Rent(WaveBuffer.WaveFormat.SampleRate / 2);
         var mem = memOwner.Memory;
         try {
-            while(RemainingBytes > 0) {
+            while(true) {
+                lock(Lock) {
+                    if(RemainingBytes < 1) {
+                        break;
+                    }
+                }
                 var readLen = await stream.ReadAsync(mem);
                 if(readLen == 0) {
                     break; // end of stream
@@ -76,22 +84,27 @@ class CaptureBuffer {
     }
 
     public void AddRange(ReadOnlySpan<byte> bytes) {
-        if(bytes.IsEmpty || RemainingBytes < 1) {
+        if(bytes.IsEmpty) {
             return;
         }
-        if(PendingByte > -1) {
-            AddAligned([(byte)PendingByte, bytes[0]]);
-            bytes = bytes[1..];
-            PendingByte = -1;
-            if(bytes.IsEmpty) {
+        lock(Lock) {
+            if(RemainingBytes < 1) {
                 return;
             }
-        }
-        if(int.IsEvenInteger(bytes.Length)) {
-            AddAligned(bytes);
-        } else {
-            AddAligned(bytes[..^1]);
-            PendingByte = bytes[^1];
+            if(PendingByte > -1) {
+                AddAligned([(byte)PendingByte, bytes[0]]);
+                bytes = bytes[1..];
+                PendingByte = -1;
+                if(bytes.IsEmpty) {
+                    return;
+                }
+            }
+            if(int.IsEvenInteger(bytes.Length)) {
+                AddAligned(bytes);
+            } else {
+                AddAligned(bytes[..^1]);
+                PendingByte = bytes[^1];
+            }
         }
     }
 
@@ -123,6 +136,8 @@ class CaptureBuffer {
     }
 
     public void Stop() {
-        RemainingBytes = 0;
+        lock(Lock) {
+            RemainingBytes = 0;
+        }
     }
 }
