@@ -64,7 +64,7 @@ class CaptureBuffer {
                 if(readLen == 0) {
                     break; // end of stream
                 }
-                AddRange(mem[..readLen].Span);
+                AddRangeCore(mem[..readLen].Span);
             }
         } catch(Exception x) {
             if(x is not ObjectDisposedException) {
@@ -79,6 +79,10 @@ class CaptureBuffer {
         if(bytes.IsEmpty || RemainingBytes < 1) {
             return;
         }
+        AddRangeCore(bytes);
+    }
+
+    void AddRangeCore(ReadOnlySpan<byte> bytes) {
         if(PendingByte > -1) {
             AddAligned([(byte)PendingByte, bytes[0]]);
             bytes = bytes[1..];
